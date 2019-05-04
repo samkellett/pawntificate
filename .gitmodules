@@ -1,0 +1,6 @@
+[submodule "ext/googletest"]
+	path = ext/googletest
+	url = https://github.com/google/googletest.git
+[submodule "ext/lichess-bot"]
+	path = ext/lichess-bot
+	url = https://github.com/careless25/lichess-bot
