@@ -167,6 +167,14 @@ std::ostream &operator<<(std::ostream &os, const square s) {
   return os << char('a' + file) << char('1' + rank);
 }
 
+constexpr auto make_square(const std::uint8_t file, const std::uint8_t rank) -> square {
+  return static_cast<square>(file + rank * 8);
+}
+
+static_assert(make_square(0, 0) == square::a1);
+static_assert(make_square(3, 5) == square::d6);
+static_assert(make_square(7, 6) == square::h7);
+
 // the enum value for the squares start from zero so we utilise this to map
 // ascii characters to their enum value quickly.
 constexpr auto to_square(char file, char rank) -> square {
@@ -178,8 +186,7 @@ constexpr auto to_square(char file, char rank) -> square {
   rank -= '1';
 
   // map to 1d index.
-  const char index = file + rank * 8;
-  return static_cast<square>(index);
+  return make_square(file, rank);
 }
 
 // some tests, odd and even rank and file

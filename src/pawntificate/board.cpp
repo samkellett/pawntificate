@@ -24,6 +24,8 @@ auto find_legal_pawn_moves(const square s,
   //   diagonally up if an enemy piece is on that square or that square is the
   //    en passant square.
   const auto pawn = get_piece(b, s);
+  assert(pawn.type() == ptype::pawn);
+
   const std::int8_t direction = pawn.colour() == colour::white ? 1 : -1;
 
   const std::uint8_t second_rank = pawn.colour() == colour::white ? 1 : 6;
@@ -78,6 +80,65 @@ auto find_legal_pawn_moves(const square s,
   }
 }
 
+auto find_legal_rook_moves(const square s,
+                           const board &b,
+                           move_out_iterator out) -> void {
+  // legal rook moves:
+  //   from where the piece is, walk up and down the file until you find another
+  //   piece -- include that square if it is an enemy piece. ditto walking left
+  //   and right on the rank.
+  const auto rook_colour = get_piece(b, s).colour();
+  const std::int8_t rook_rank = rank(s);
+  const std::int8_t rook_file = file(s);
+
+  // adds a rook move, returns false if a direction should not be continued
+  const auto add_move = [&](const square new_square) -> bool {
+    const auto other_piece = get_piece(b, new_square);
+    if (other_piece == pieces::_) {
+      *out++ = move{s, new_square};
+      return true;
+    } else if (rook_colour != other_piece.colour()) {
+      *out++ = move{s, new_square};
+      return false;
+    } else {
+      assert(rook_colour == other_piece.colour());
+      return false;
+    }
+  };
+
+  // up
+  for (auto r = rook_rank - 1; r >= 0; --r) {
+    const auto up = make_square(rook_file, r);
+    if (!add_move(up)) {
+      break;
+    }
+  }
+
+  // down
+  for (auto r = rook_rank + 1; r < 8; ++r) {
+    const auto down = make_square(rook_file, r);
+    if (!add_move(down)) {
+      break;
+    }
+  }
+
+  // left
+  for (auto f = rook_file - 1; f >= 0; --f) {
+    const auto left = make_square(f, rook_rank);
+    if (!add_move(left)) {
+      break;
+    }
+  }
+
+  // right
+  for (auto f = rook_file + 1; f < 8; ++f) {
+    const auto right = make_square(f, rook_rank);
+    if (!add_move(right)) {
+      break;
+    }
+  }
+}
+
 } // unnamed namespace
 
 auto find_legal_moves([[maybe_unused]] const board &b) -> std::vector<move> {
@@ -96,6 +157,8 @@ auto find_legal_moves([[maybe_unused]] const board &b) -> std::vector<move> {
           find_legal_pawn_moves(s, b, out);
           break;
         case ptype::rook:
+          find_legal_rook_moves(s, b, out);
+          break;
         case ptype::knight:
         case ptype::bishop:
         case ptype::queen:

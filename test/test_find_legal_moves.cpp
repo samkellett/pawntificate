@@ -78,9 +78,13 @@ TEST(FindLegalMoves, BlackPawns) {
     move(square::a7, square::a6),
     move(square::a7, square::a5),
     move(square::a7, square::b6),
+
     move(square::c7, square::b6),
+
     move(square::c6, square::c5),
+
     move(square::d6, square::d5),
+
     move(square::e2, square::e1, pieces::r),
     move(square::e2, square::e1, pieces::k),
     move(square::e2, square::e1, pieces::b),
@@ -89,14 +93,101 @@ TEST(FindLegalMoves, BlackPawns) {
     move(square::e2, square::d1, pieces::k),
     move(square::e2, square::d1, pieces::b),
     move(square::e2, square::d1, pieces::q),
+
     move(square::f7, square::f6),
     move(square::f7, square::f5),
     move(square::f7, square::e6),
     move(square::f7, square::g6),
+
     move(square::h7, square::h6),
     move(square::h7, square::h5),
     move(square::h7, square::g6),
+
     move(square::h4, square::h3),
     move(square::h4, square::g3) // en passant
+  }));
+}
+
+TEST(FindLegalMoves, WhiteRook) {
+  pawntificate::board uut(colour::white, {
+    R, _, p, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, p, R, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    p, _, _, _, _, _, _, _,
+    _, _, _, p, _, R, _, _,
+    _, _, _, _, _, _, _, _
+  });
+
+  const auto result = pawntificate::find_legal_moves(uut);
+  ASSERT_THAT(result, UnorderedElementsAreArray({
+    move(square::a1, square::b1),
+    move(square::a1, square::c1),
+    move(square::a1, square::a2),
+    move(square::a1, square::a3),
+    move(square::a1, square::a4),
+    move(square::a1, square::a5),
+    move(square::a1, square::a6),
+
+    move(square::f3, square::f1),
+    move(square::f3, square::f2),
+    move(square::f3, square::f4),
+    move(square::f3, square::f5),
+    move(square::f3, square::f6),
+    move(square::f3, square::e3),
+    move(square::f3, square::g3),
+    move(square::f3, square::h3),
+
+    move(square::f7, square::d7),
+    move(square::f7, square::e7),
+    move(square::f7, square::g7),
+    move(square::f7, square::h7),
+    move(square::f7, square::f4),
+    move(square::f7, square::f5),
+    move(square::f7, square::f6),
+    move(square::f7, square::f8)
+  }));
+}
+
+TEST(FindLegalMoves, BlackRook) {
+  pawntificate::board uut(colour::black, {
+    r, _, P, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, P, r, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    P, _, _, _, _, _, _, _,
+    _, _, _, P, _, r, _, _,
+    _, _, _, _, _, _, _, _
+  });
+
+  const auto result = pawntificate::find_legal_moves(uut);
+  ASSERT_THAT(result, UnorderedElementsAreArray({
+    move(square::a1, square::b1),
+    move(square::a1, square::c1),
+    move(square::a1, square::a2),
+    move(square::a1, square::a3),
+    move(square::a1, square::a4),
+    move(square::a1, square::a5),
+    move(square::a1, square::a6),
+
+    move(square::f3, square::f1),
+    move(square::f3, square::f2),
+    move(square::f3, square::f4),
+    move(square::f3, square::f5),
+    move(square::f3, square::f6),
+    move(square::f3, square::e3),
+    move(square::f3, square::g3),
+    move(square::f3, square::h3),
+
+    move(square::f7, square::d7),
+    move(square::f7, square::e7),
+    move(square::f7, square::g7),
+    move(square::f7, square::h7),
+    move(square::f7, square::f4),
+    move(square::f7, square::f5),
+    move(square::f7, square::f6),
+    move(square::f7, square::f8)
   }));
 }
