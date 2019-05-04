@@ -139,6 +139,37 @@ auto find_legal_rook_moves(const square s,
   }
 }
 
+auto find_legal_knight_moves(const square s,
+                             const board &b,
+                             move_out_iterator out) -> void {
+  // legal knight moves:
+  //   there is always 8 squares around the knight it can go as long as they
+  //   are in the bounds of the board and not occupied by a friendly piece
+  const auto knight_colour = get_piece(b, s).colour();
+
+  using P = std::pair<std::int8_t, std::int8_t>;
+  std::array<P, 8> offsets{
+    P(1, 2), P(1, -2), P(2, 1), P(2, -1), P(-1, 2), P(-1, -2), P(-2, 1), P(-2, -1)
+  };
+
+  const std::int8_t r = rank(s);
+  const std::int8_t f = file(s);
+
+  for (const auto [ro, fo] : offsets) {
+    if (r + ro > 7 || r + ro < 0 || f + fo > 7 || f + fo < 0) {
+      continue;
+    }
+
+    const auto new_square = make_square(f + fo, r + ro);
+    const auto other_piece = get_piece(b, new_square);
+    if (other_piece == pieces::_ || other_piece.colour() != knight_colour) {
+      *out++ = move{s, new_square};
+    } else {
+      assert(other_piece.colour() == knight_colour);
+    }
+  }
+}
+
 } // unnamed namespace
 
 auto find_legal_moves([[maybe_unused]] const board &b) -> std::vector<move> {
@@ -160,6 +191,8 @@ auto find_legal_moves([[maybe_unused]] const board &b) -> std::vector<move> {
           find_legal_rook_moves(s, b, out);
           break;
         case ptype::knight:
+          find_legal_knight_moves(s, b, out);
+          break;
         case ptype::bishop:
         case ptype::queen:
         case ptype::king:

@@ -191,3 +191,53 @@ TEST(FindLegalMoves, BlackRook) {
     move(square::f7, square::f8)
   }));
 }
+
+TEST(FindLegalMoves, WhiteKnight) {
+  pawntificate::board uut(colour::white, {
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, P, _, _, _,
+    _, _, _, _, _, _, N, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, q, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _
+  });
+
+  const auto result = pawntificate::find_legal_moves(uut);
+  ASSERT_THAT(result, UnorderedElementsAreArray({
+    move(square::g4, square::f2),
+    move(square::g4, square::h2),
+    move(square::g4, square::h6),
+    move(square::g4, square::f6),
+    move(square::g4, square::e5),
+
+    // legal pawn move
+    move(square::e3, square::e4)
+  }));
+}
+
+TEST(FindLegalMoves, BlackKnight) {
+  pawntificate::board uut(colour::black, {
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, p, _, _, _,
+    _, _, _, _, _, _, n, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, Q, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _
+  });
+
+  const auto result = pawntificate::find_legal_moves(uut);
+  ASSERT_THAT(result, UnorderedElementsAreArray({
+    move(square::g4, square::f2),
+    move(square::g4, square::h2),
+    move(square::g4, square::h6),
+    move(square::g4, square::f6),
+    move(square::g4, square::e5),
+
+    // legal pawn move
+    move(square::e3, square::e2)
+  }));
+}
