@@ -14,4 +14,5 @@ function(add_unit_test)
 endfunction()
 
 add_unit_test(GTEST NAME test_board SOURCES test_board.cpp LIBRARIES pawntificate)
+add_unit_test(GTEST NAME test_find_legal_moves SOURCES test_find_legal_moves.cpp LIBRARIES pawntificate)
 add_unit_test(GTEST NAME test_uci_command SOURCES test_uci_command.cpp LIBRARIES pawntificate)

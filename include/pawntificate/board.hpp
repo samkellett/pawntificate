@@ -3,8 +3,8 @@
 
 #include <array>
 #include <string_view>
-
 #include <iostream>
+#include <vector>
 
 #include "cxx/make_array.hpp"
 
@@ -30,28 +30,67 @@ constexpr auto flip_colour(colour &c) -> void{
   c = static_cast<colour>(op ^ 1u);
 }
 
-struct piece {
-  constexpr piece(const std::uint8_t opcode) : opcode{opcode} {}
+enum class ptype : std::uint8_t {
+  pawn = 0b001u, rook = 0b010u, knight = 0b011u, bishop = 0b100u, queen = 0b101u, king = 0b110u
+};
 
-  std::uint8_t opcode;
+struct piece {
+  constexpr piece() = default;
+  explicit constexpr piece(std::uint8_t opcode) : opcode(opcode) {}
+  constexpr piece(const colour c, const ptype t)
+  : opcode(static_cast<std::uint8_t>(c) | static_cast<std::uint8_t>(t) << 1u) {}
+
+
+  constexpr auto colour() const -> pawntificate::colour {
+    // bit mask to zero out the type bits.
+    constexpr auto colour_mask = 0b1u;
+    return static_cast<pawntificate::colour>(opcode & colour_mask);
+  }
+
+  constexpr auto type() const -> ptype {
+    return static_cast<ptype>(opcode >> 1u);
+  }
+
+  std::uint8_t opcode = 0b0000u;
 };
 
 constexpr auto operator==(const piece &lhs, const piece &rhs) -> bool {
   return lhs.opcode == rhs.opcode;
 }
 
+constexpr auto operator!=(const piece &lhs, const piece &rhs) -> bool {
+  return !(lhs == rhs);
+}
+
 namespace pieces {
 
 // null piece
-constexpr piece _ = 0b0000u;
+constexpr piece _;
 
 // white
-constexpr piece P = 0b0011u, R = 0b0101u, N = 0b0111u, B = 0b1001u, Q = 0b1011u, K = 0b1101u;
+constexpr piece P{colour::white, ptype::pawn};
+constexpr piece R{colour::white, ptype::rook};
+constexpr piece N{colour::white, ptype::knight};
+constexpr piece B{colour::white, ptype::bishop};
+constexpr piece Q{colour::white, ptype::queen};
+constexpr piece K{colour::white, ptype::king};
 
 // black
-constexpr piece p = 0b0010u, r = 0b0100u, n = 0b0110u, b = 0b1000u, q = 0b1010u, k = 0b1100u;
+constexpr piece p{colour::black, ptype::pawn};
+constexpr piece r{colour::black, ptype::rook};
+constexpr piece n{colour::black, ptype::knight};
+constexpr piece b{colour::black, ptype::bishop};
+constexpr piece q{colour::black, ptype::queen};
+constexpr piece k{colour::black, ptype::king};
 
 } // namespace pieces
+
+static_assert(pieces::P.colour() == colour::white);
+static_assert(pieces::p.colour() == colour::black);
+
+static_assert(pieces::R.type() == ptype::rook);
+static_assert(pieces::N.type() == ptype::knight);
+
 
 inline
 auto operator<<(std::ostream &os, const piece &p_) -> std::ostream & {
@@ -117,6 +156,7 @@ enum class square : std::uint8_t {
   _
 };
 
+inline
 std::ostream &operator<<(std::ostream &os, const square s) {
   if (s == square::_) {
     return os << "-";
@@ -148,10 +188,21 @@ static_assert(to_square('c', '2') == square::c2);
 static_assert(to_square('f', '7') == square::f7);
 static_assert(to_square('h', '8') == square::h8);
 
+// return the rank of a square
+constexpr auto rank(const square s) -> std::uint8_t {
+  return static_cast<std::uint8_t>(s) / 8;
+}
+
+
+static_assert(rank(square::a1) == 0);
+static_assert(rank(square::d3) == 2);
+static_assert(rank(square::e4) == 3);
+static_assert(rank(square::h7) == 6);
+
 // given two squares, return the amount of ranks apart they are.
 constexpr auto rank_distance(const square from, const square to) -> std::uint8_t {
-  const auto from_rank = static_cast<std::int8_t>(from) / 8;
-  const auto to_rank = static_cast<std::int8_t>(to) / 8;
+  const std::int8_t from_rank = rank(from);
+  const std::int8_t to_rank = rank(to);
 
   const auto distance = from_rank - to_rank;
   return distance < 0 ? -distance : distance;
@@ -175,9 +226,87 @@ static_assert(move_by_rank(square::a1, 1) == square::a2);
 static_assert(move_by_rank(square::b2, 2) == square::b4);
 static_assert(move_by_rank(square::c3, -1) == square::c2);
 
+// return the file of a square
+constexpr auto file(const square s) -> std::uint8_t {
+  return static_cast<std::uint8_t>(s) % 8;
+}
+
+static_assert(file(square::a1) == 0);
+static_assert(file(square::d3) == 3);
+static_assert(file(square::e4) == 4);
+static_assert(file(square::h7) == 7);
+
+constexpr square move_by_file(const square s, const std::int8_t distance) {
+  const auto new_index = static_cast<std::uint8_t>(s) + distance;
+  return static_cast<square>(new_index);
+}
+
+static_assert(move_by_file(square::a1, 1) == square::b1);
+static_assert(move_by_file(square::b2, 2) == square::d2);
+static_assert(move_by_file(square::c3, -1) == square::b3);
+
+class move {
+public:
+  constexpr move(const square from, const square to)
+  : data(static_cast<std::uint8_t>(from) | (static_cast<std::uint8_t>(to) << 6)) {}
+
+  constexpr move(const square from, const square to, const piece p)
+  : move(from, to) {
+    data |= static_cast<std::uint8_t>(p.opcode) << 12;
+  }
+
+  constexpr auto from() const -> square {
+    const std::uint8_t s = data & 0b111111;
+    return square(s);
+  }
+
+  constexpr auto to() const -> square {
+    const std::uint8_t s = (data >> 6) & 0b111111;
+    return square(s);
+  }
+
+  constexpr auto promotion() const -> piece {
+    const std::uint8_t p = (data >> 12) & 0b1111;
+    return piece(p);
+  }
+
+private:
+  friend constexpr auto operator==(const move &lhs, const move &rhs) -> bool;
+
+  // we encode two squares and potentially a promotion piece into 16-bits.
+  //  [0..6)   square from
+  //  [6..12)  square to
+  //  [12..16) promotion piece
+  std::uint16_t data = 0;
+};
+
+constexpr auto operator==(const move &lhs, const move &rhs) -> bool {
+  return lhs.data == rhs.data;
+}
+
+inline
+auto operator<<(std::ostream &os, const move &m) -> std::ostream & {
+  os << m.from() << m.to();
+  if (m.promotion() != pieces::_) {
+    os << m.promotion();
+  }
+
+  return os;
+}
+
+static_assert(move{square::a1, square::b2}.from() == square::a1);
+static_assert(move{square::a1, square::b2}.to() == square::b2);
+static_assert(move{square::a1, square::b2}.promotion() == pieces::_);
+
+static_assert(move{square::a1, square::b2, pieces::q}.from() == square::a1);
+static_assert(move{square::a1, square::b2, pieces::q}.to() == square::b2);
+static_assert(move{square::a1, square::b2, pieces::q}.promotion() == pieces::q);
+
 struct board {
   constexpr board() = default;
-  board(const colour active, const std::array<piece, 64> piece_board, const square en_passant = square::_)
+  board(const colour active,
+        const std::array<piece, 64> piece_board,
+        const square en_passant = square::_)
     : active(active), en_passant(en_passant), piece_board(piece_board) {}
 
   explicit constexpr board(const std::string_view move_list) {
@@ -235,9 +364,9 @@ struct board {
           }
         }();
 
-        // if we have just moved onto the en passant square then remove the
+        // if a pawn has just moved onto the en passant square then remove the
         // pawn on the new rank.
-        if (to == en_passant) {
+        if (is_pawn(piece) && to == en_passant) {
           const auto pawn = move_by_rank(to, active == colour::white ? 1 : -1);
           set_square(pawn, pieces::_);
         }
@@ -301,6 +430,9 @@ auto operator<<(std::ostream &os, const board &b) -> std::ostream & {
 
   return os << " " << b.active << " " << b.en_passant;
 }
+
+// given a board, list all of the legal moves available.
+auto find_legal_moves(const board &b) -> std::vector<move>;
 
 } // namespace pawntificate
 

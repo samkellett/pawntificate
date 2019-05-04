@@ -151,3 +151,17 @@ TEST(BoardState, EnPassantBlack) {
     R, N, B, Q, K, B, N, R
   }));
 }
+
+TEST(BoardState, NonPawnEnPassantSquare) {
+  pawntificate::board uut("e2e4 a7a6 d1g4 e7e5 g4e6");
+  ASSERT_EQ(uut, pawntificate::board(colour::black, {
+    r, n, b, _, k, b, n, r,
+    p, p, p, p, _, p, p, p,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, p, _, _, _,
+    _, _, _, _, P, _, _, _,
+    P, _, _, _, q, _, _, _,
+    _, P, P, P, _, P, P, P,
+    R, N, B, Q, K, B, N, R
+  }));
+}
