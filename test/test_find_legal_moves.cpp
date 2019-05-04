@@ -241,3 +241,61 @@ TEST(FindLegalMoves, BlackKnight) {
     move(square::e3, square::e2)
   }));
 }
+
+TEST(FindLegalMoves, WhiteBishop) {
+  pawntificate::board uut(colour::white, {
+    _, _, _, _, _, _, _, _,
+    _, B, _, _, _, _, _, _,
+    _, _, _, _, p, _, _, _,
+    _, _, _, B, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, p, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _
+  });
+
+  const auto result = pawntificate::find_legal_moves(uut);
+  ASSERT_THAT(result, UnorderedElementsAreArray({
+    move(square::b2, square::a1),
+    move(square::b2, square::c1),
+    move(square::b2, square::a3),
+    move(square::b2, square::c3),
+
+    move(square::d4, square::c3),
+    move(square::d4, square::e3),
+    move(square::d4, square::e5),
+    move(square::d4, square::f6),
+    move(square::d4, square::c5),
+    move(square::d4, square::b6),
+    move(square::d4, square::a7)
+  }));
+}
+
+TEST(FindLegalMoves, BlackBishop) {
+  pawntificate::board uut(colour::black, {
+    _, _, _, _, _, _, _, _,
+    _, b, _, _, _, _, _, _,
+    _, _, _, _, P, _, _, _,
+    _, _, _, b, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, P, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _
+  });
+
+  const auto result = pawntificate::find_legal_moves(uut);
+  ASSERT_THAT(result, UnorderedElementsAreArray({
+    move(square::b2, square::a1),
+    move(square::b2, square::c1),
+    move(square::b2, square::a3),
+    move(square::b2, square::c3),
+
+    move(square::d4, square::c3),
+    move(square::d4, square::e3),
+    move(square::d4, square::e5),
+    move(square::d4, square::f6),
+    move(square::d4, square::c5),
+    move(square::d4, square::b6),
+    move(square::d4, square::a7)
+  }));
+}

@@ -170,6 +170,63 @@ auto find_legal_knight_moves(const square s,
   }
 }
 
+auto find_legal_bishop_moves(const square s,
+                             const board &b,
+                             move_out_iterator out) -> void {
+  // legal bishop moves:
+  //   similar to the rook moves, except it walks diagonally in each axis.
+  const auto bishop_colour = get_piece(b, s).colour();
+  const std::int8_t bishop_rank = rank(s);
+  const std::int8_t bishop_file = file(s);
+
+  // adds a bishop move, returns false if a direction should not be continued
+  const auto add_move = [&](const square new_square) -> bool {
+    const auto other_piece = get_piece(b, new_square);
+    if (other_piece == pieces::_) {
+      *out++ = move{s, new_square};
+      return true;
+    } else if (bishop_colour != other_piece.colour()) {
+      *out++ = move{s, new_square};
+      return false;
+    } else {
+      assert(bishop_colour == other_piece.colour());
+      return false;
+    }
+  };
+
+  // up-left
+  for (auto r = bishop_rank - 1, f = bishop_file - 1; r >= 0 && f >= 0; --r, --f) {
+    const auto upleft = make_square(f, r);
+    if (!add_move(upleft)) {
+      break;
+    }
+  }
+
+  // up-right
+  for (auto r = bishop_rank - 1, f = bishop_file + 1; r >= 0 && f < 8; --r, ++f) {
+    const auto upright = make_square(f, r);
+    if (!add_move(upright)) {
+      break;
+    }
+  }
+
+  // down-left
+  for (auto r = bishop_rank + 1, f = bishop_file - 1; r < 8 && f >= 0; ++r, --f) {
+    const auto downleft = make_square(f, r);
+    if (!add_move(downleft)) {
+      break;
+    }
+  }
+
+  // down-right
+  for (auto r = bishop_rank + 1, f = bishop_file + 1; r < 8 && f < 8; ++r, ++f) {
+    const auto downright = make_square(f, r);
+    if (!add_move(downright)) {
+      break;
+    }
+  }
+}
+
 } // unnamed namespace
 
 auto find_legal_moves([[maybe_unused]] const board &b) -> std::vector<move> {
@@ -194,6 +251,8 @@ auto find_legal_moves([[maybe_unused]] const board &b) -> std::vector<move> {
           find_legal_knight_moves(s, b, out);
           break;
         case ptype::bishop:
+          find_legal_bishop_moves(s, b, out);
+          break;
         case ptype::queen:
         case ptype::king:
           break;
