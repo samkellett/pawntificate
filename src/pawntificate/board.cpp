@@ -254,6 +254,8 @@ auto find_legal_moves([[maybe_unused]] const board &b) -> std::vector<move> {
           find_legal_bishop_moves(s, b, out);
           break;
         case ptype::queen:
+          find_legal_rook_moves(s, b, out);
+          find_legal_bishop_moves(s, b, out);
         case ptype::king:
           break;
       }

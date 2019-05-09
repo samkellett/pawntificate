@@ -11,15 +11,6 @@ using pawntificate::square;
 namespace pieces = pawntificate::pieces;
 
 using ::testing::UnorderedElementsAreArray;
-using ::testing::WhenSorted;
-
-  // legal pawn moves:
-  //   if the target square is empty:
-  //    - one move up,
-  //    - one move up with a promotion if on the 7th rank,
-  //    - two moves up if on the 2nd rank and intermediate square is empty,
-  //   diagonally up if an enemy piece is on that square or that square is the
-  //    en passant square.
 
 TEST(FindLegalMoves, WhitePawns) {
   pawntificate::board uut(colour::white, {
@@ -38,9 +29,13 @@ TEST(FindLegalMoves, WhitePawns) {
     move(square::a2, square::a3),
     move(square::a2, square::a4),
     move(square::a2, square::b3),
+
     move(square::c2, square::b3),
+
     move(square::c3, square::c4),
+
     move(square::d3, square::d4),
+
     move(square::e7, square::e8, pieces::r),
     move(square::e7, square::e8, pieces::k),
     move(square::e7, square::e8, pieces::b),
@@ -49,13 +44,16 @@ TEST(FindLegalMoves, WhitePawns) {
     move(square::e7, square::d8, pieces::k),
     move(square::e7, square::d8, pieces::b),
     move(square::e7, square::d8, pieces::q),
+
     move(square::f2, square::f3),
     move(square::f2, square::f4),
     move(square::f2, square::e3),
     move(square::f2, square::g3),
+
     move(square::h2, square::h3),
     move(square::h2, square::h4),
     move(square::h2, square::g3),
+
     move(square::h5, square::h6),
     move(square::h5, square::g6) // en passant
   }));
@@ -297,5 +295,97 @@ TEST(FindLegalMoves, BlackBishop) {
     move(square::d4, square::c5),
     move(square::d4, square::b6),
     move(square::d4, square::a7)
+  }));
+}
+
+TEST(FindLegalMoves, WhiteQueen) {
+  pawntificate::board uut(colour::white, {
+    _, _, _, _, _, _, _, _,
+    _, Q, _, _, p, _, _, _,
+    _, p, _, _, p, _, _, _,
+    _, p, _, Q, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, p, _, p, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _
+  });
+
+  const auto result = pawntificate::find_legal_moves(uut);
+  ASSERT_THAT(result, UnorderedElementsAreArray({
+    move(square::b2, square::a1),
+    move(square::b2, square::b1),
+    move(square::b2, square::c1),
+    move(square::b2, square::a2),
+    move(square::b2, square::c2),
+    move(square::b2, square::d2),
+    move(square::b2, square::e2),
+    move(square::b2, square::a3),
+    move(square::b2, square::b3),
+    move(square::b2, square::c3),
+
+    move(square::d4, square::c3),
+    move(square::d4, square::d3),
+    move(square::d4, square::d2),
+    move(square::d4, square::d1),
+    move(square::d4, square::e3),
+    move(square::d4, square::e4),
+    move(square::d4, square::f4),
+    move(square::d4, square::g4),
+    move(square::d4, square::h4),
+    move(square::d4, square::e5),
+    move(square::d4, square::f6),
+    move(square::d4, square::d5),
+    move(square::d4, square::d6),
+    move(square::d4, square::c5),
+    move(square::d4, square::b6),
+    move(square::d4, square::a7),
+    move(square::d4, square::c4),
+    move(square::d4, square::b4)
+  }));
+}
+
+TEST(FindLegalMoves, BlackQueen) {
+  pawntificate::board uut(colour::black, {
+    _, _, _, _, _, _, _, _,
+    _, q, _, _, P, _, _, _,
+    _, P, _, _, P, _, _, _,
+    _, P, _, q, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, P, _, P, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _
+  });
+
+  const auto result = pawntificate::find_legal_moves(uut);
+  ASSERT_THAT(result, UnorderedElementsAreArray({
+    move(square::b2, square::a1),
+    move(square::b2, square::b1),
+    move(square::b2, square::c1),
+    move(square::b2, square::a2),
+    move(square::b2, square::c2),
+    move(square::b2, square::d2),
+    move(square::b2, square::e2),
+    move(square::b2, square::a3),
+    move(square::b2, square::b3),
+    move(square::b2, square::c3),
+
+    move(square::d4, square::c3),
+    move(square::d4, square::d3),
+    move(square::d4, square::d2),
+    move(square::d4, square::d1),
+    move(square::d4, square::e3),
+    move(square::d4, square::e4),
+    move(square::d4, square::f4),
+    move(square::d4, square::g4),
+    move(square::d4, square::h4),
+    move(square::d4, square::e5),
+    move(square::d4, square::f6),
+    move(square::d4, square::d5),
+    move(square::d4, square::d6),
+    move(square::d4, square::c5),
+    move(square::d4, square::b6),
+    move(square::d4, square::a7),
+    move(square::d4, square::c4),
+    move(square::d4, square::b4)
   }));
 }
