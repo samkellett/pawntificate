@@ -207,13 +207,22 @@ static_assert(rank(square::e4) == 3);
 static_assert(rank(square::h7) == 6);
 
 // given two squares, return the amount of ranks apart they are.
-constexpr auto rank_distance(const square from, const square to) -> std::uint8_t {
+constexpr auto signed_rank_distance(const square from, const square to) -> std::int8_t {
   const std::int8_t from_rank = rank(from);
   const std::int8_t to_rank = rank(to);
 
-  const auto distance = from_rank - to_rank;
+  return to_rank - from_rank;
+}
+
+constexpr auto rank_distance(const square from, const square to) -> std::uint8_t {
+  const auto distance = signed_rank_distance(from, to);
   return distance < 0 ? -distance : distance;
 }
+
+static_assert(signed_rank_distance(square::a1, square::a2) == 1);
+static_assert(signed_rank_distance(square::a2, square::a1) == -1);
+static_assert(signed_rank_distance(square::h3, square::a4) == 1);
+static_assert(signed_rank_distance(square::a1, square::h8) == 7);
 
 static_assert(rank_distance(square::a1, square::b1) == 0);
 static_assert(rank_distance(square::a1, square::h1) == 0);
@@ -242,6 +251,24 @@ static_assert(file(square::a1) == 0);
 static_assert(file(square::d3) == 3);
 static_assert(file(square::e4) == 4);
 static_assert(file(square::h7) == 7);
+
+// given two squares, return the amount of files apart they are.
+constexpr auto file_distance(const square from, const square to) -> std::uint8_t {
+  const std::int8_t from_file = file(from);
+  const std::int8_t to_file = file(to);
+
+  const auto distance = from_file - to_file;
+  return distance < 0 ? -distance : distance;
+}
+
+static_assert(file_distance(square::a1, square::b1) == 1);
+static_assert(file_distance(square::a1, square::h1) == 7);
+static_assert(file_distance(square::b1, square::a1) == 1);
+static_assert(file_distance(square::h1, square::a1) == 7);
+static_assert(file_distance(square::a1, square::a2) == 0);
+static_assert(file_distance(square::a2, square::a1) == 0);
+static_assert(file_distance(square::h3, square::a4) == 7);
+static_assert(file_distance(square::a1, square::h8) == 7);
 
 constexpr square move_by_file(const square s, const std::int8_t distance) {
   const auto new_index = static_cast<std::uint8_t>(s) + distance;
@@ -284,7 +311,7 @@ private:
   //  [0..6)   square from
   //  [6..12)  square to
   //  [12..16) promotion piece
-  std::uint16_t data = 0;
+  std::uint16_t data;
 };
 
 constexpr auto operator==(const move &lhs, const move &rhs) -> bool {
@@ -431,11 +458,11 @@ auto operator<<(std::ostream &os, const board &b) -> std::ostream & {
     os << b.piece_board[i];
 
     if (i % 8 == 0) {
-      os << "/";
+      os << '/';
     }
   }
 
-  return os << " " << b.active << " " << b.en_passant;
+  return os << ' ' << b.active << ' ' << b.en_passant;
 }
 
 // given a board, list all of the legal moves available.
