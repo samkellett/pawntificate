@@ -215,7 +215,7 @@ public:
     }
   }
 
-  auto add_move(const square from, const square to, const piece promotion) -> void {
+  auto add_move(const square from, const square to, const ptype promotion) -> void {
     if (king_is_safe(b, king, from, to)) {
       moves.emplace_back(from, to, promotion);
     }
@@ -258,10 +258,10 @@ auto find_legal_pawn_moves(const square s,
     const std::uint8_t top_rank = pawn.colour() == colour::white ? 7 : 0;
 
     if (rank(new_square) == top_rank) {
-      moves.add_move(s, new_square, pieces::r);
-      moves.add_move(s, new_square, pieces::k);
-      moves.add_move(s, new_square, pieces::b);
-      moves.add_move(s, new_square, pieces::q);
+      moves.add_move(s, new_square, ptype::rook);
+      moves.add_move(s, new_square, ptype::knight);
+      moves.add_move(s, new_square, ptype::bishop);
+      moves.add_move(s, new_square, ptype::queen);
     } else {
       moves.add_move(s, new_square);
     }
@@ -507,6 +507,8 @@ auto find_legal_moves(const board &b) -> std::vector<move> {
           break;
         case ptype::king:
           find_legal_king_moves(s, b, moves);
+          break;
+        case ptype::_:
           break;
       }
     }

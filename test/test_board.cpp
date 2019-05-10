@@ -8,6 +8,7 @@ using namespace pawntificate::pieces;
 
 using pawntificate::colour;
 using pawntificate::move;
+using pawntificate::ptype;
 using pawntificate::square;
 
 class Moves : public ::testing::TestWithParam<std::pair<move, std::string_view>> {};
@@ -23,7 +24,8 @@ TEST_P(Moves, StringRepresentation) {
 
 INSTANTIATE_TEST_SUITE_P(SomeMoves, Moves, ::testing::Values(
   std::make_pair(move{square::e2, square::e4}, "e2e4"sv),
-  std::make_pair(move{square::h7, square::h8, pawntificate::pieces::q}, "h7h8q"sv)
+  std::make_pair(move{square::h7, square::h8, ptype::queen}, "h7h8q"sv),
+  std::make_pair(move{square::h7, square::h8, ptype::knight}, "h7h8n"sv)
 ));
 
 TEST(BoardState, DefaultConstructed) {

@@ -6,6 +6,7 @@ using namespace pawntificate::pieces;
 
 using pawntificate::colour;
 using pawntificate::move;
+using pawntificate::ptype;
 using pawntificate::square;
 
 namespace pieces = pawntificate::pieces;
@@ -36,15 +37,15 @@ TEST(FindLegalMoves, WhitePawns) {
 
     move(square::d3, square::d4),
 
-    move(square::a7, square::a8, pieces::r),
-    move(square::a7, square::a8, pieces::k),
-    move(square::a7, square::a8, pieces::b),
-    move(square::a7, square::a8, pieces::q),
+    move(square::a7, square::a8, ptype::rook),
+    move(square::a7, square::a8, ptype::knight),
+    move(square::a7, square::a8, ptype::bishop),
+    move(square::a7, square::a8, ptype::queen),
 
-    move(square::e7, square::d8, pieces::r),
-    move(square::e7, square::d8, pieces::k),
-    move(square::e7, square::d8, pieces::b),
-    move(square::e7, square::d8, pieces::q),
+    move(square::e7, square::d8, ptype::rook),
+    move(square::e7, square::d8, ptype::knight),
+    move(square::e7, square::d8, ptype::bishop),
+    move(square::e7, square::d8, ptype::queen),
 
     move(square::f2, square::f3),
     move(square::f2, square::f4),
@@ -89,14 +90,14 @@ TEST(FindLegalMoves, BlackPawns) {
 
     move(square::d6, square::d5),
 
-    move(square::e2, square::e1, pieces::r),
-    move(square::e2, square::e1, pieces::k),
-    move(square::e2, square::e1, pieces::b),
-    move(square::e2, square::e1, pieces::q),
-    move(square::e2, square::d1, pieces::r),
-    move(square::e2, square::d1, pieces::k),
-    move(square::e2, square::d1, pieces::b),
-    move(square::e2, square::d1, pieces::q),
+    move(square::e2, square::e1, ptype::rook),
+    move(square::e2, square::e1, ptype::knight),
+    move(square::e2, square::e1, ptype::bishop),
+    move(square::e2, square::e1, ptype::queen),
+    move(square::e2, square::d1, ptype::rook),
+    move(square::e2, square::d1, ptype::knight),
+    move(square::e2, square::d1, ptype::bishop),
+    move(square::e2, square::d1, ptype::queen),
 
     move(square::f7, square::f6),
     move(square::f7, square::f5),

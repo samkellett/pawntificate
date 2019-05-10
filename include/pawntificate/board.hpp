@@ -31,7 +31,7 @@ constexpr auto flip_colour(colour &c) -> void{
 }
 
 enum class ptype : std::uint8_t {
-  pawn = 0b001u, rook = 0b010u, knight = 0b011u, bishop = 0b100u, queen = 0b101u, king = 0b110u
+  _ = 0b000u, pawn = 0b001u, rook = 0b010u, knight = 0b011u, bishop = 0b100u, queen = 0b101u, king = 0b110u
 };
 
 struct piece {
@@ -118,28 +118,25 @@ constexpr auto to_promoted_piece(const char pawn, const colour c) -> piece {
   // p must be one of the pieces that a pawn can promote to, lower-case only.
   assert(pawn == 'r' || pawn == 'n' || pawn == 'b' || pawn == 'q');
 
-  // get the piece as black as that colour bit is 0, we will OR in the actual
-  // colour after.
-  auto promoted_piece = [&]() -> piece {
+  const auto promoted_type = [&]() -> ptype {
     using namespace pieces;
 
     switch(pawn) {
-      case 'r': return r;
-      case 'n': return n;
-      case 'b': return b;
-      case 'q': return q;
+      case 'r': return ptype::rook;
+      case 'n': return ptype::knight;
+      case 'b': return ptype::bishop;
+      case 'q': return ptype::queen;
     }
 
     assert(false && "unsupported piece promotion");
-    return _;
+    return ptype::_;
   }();
 
-  promoted_piece.opcode |= static_cast<std::uint8_t>(c);
-  return promoted_piece;
+  return {c, promoted_type};
 }
 
 constexpr auto is_pawn(const piece p) -> bool {
-  return p == pieces::p || p == pieces::P;
+  return p.type() == ptype::pawn;
 }
 
 enum class square : std::uint8_t {
@@ -284,9 +281,9 @@ public:
   constexpr move(const square from, const square to)
   : data(static_cast<std::uint8_t>(from) | (static_cast<std::uint8_t>(to) << 6)) {}
 
-  constexpr move(const square from, const square to, const piece p)
+  constexpr move(const square from, const square to, const ptype p)
   : move(from, to) {
-    data |= static_cast<std::uint8_t>(p.opcode) << 12;
+    data |= static_cast<std::uint8_t>(p) << 12;
   }
 
   constexpr auto from() const -> square {
@@ -299,9 +296,9 @@ public:
     return square(s);
   }
 
-  constexpr auto promotion() const -> piece {
+  constexpr auto promote_to() const -> ptype {
     const std::uint8_t p = (data >> 12) & 0b1111;
-    return piece(p);
+    return ptype(p);
   }
 
 private:
@@ -321,8 +318,9 @@ constexpr auto operator==(const move &lhs, const move &rhs) -> bool {
 inline
 auto operator<<(std::ostream &os, const move &m) -> std::ostream & {
   os << m.from() << m.to();
-  if (m.promotion() != pieces::_) {
-    os << m.promotion();
+  if (m.promote_to() != ptype::_) {
+    // UCI prints promotion in lower-case so convert promotion type to black
+    os << piece{colour::black, m.promote_to()};
   }
 
   return os;
@@ -330,11 +328,11 @@ auto operator<<(std::ostream &os, const move &m) -> std::ostream & {
 
 static_assert(move{square::a1, square::b2}.from() == square::a1);
 static_assert(move{square::a1, square::b2}.to() == square::b2);
-static_assert(move{square::a1, square::b2}.promotion() == pieces::_);
+static_assert(move{square::a1, square::b2}.promote_to() == ptype::_);
 
-static_assert(move{square::a1, square::b2, pieces::q}.from() == square::a1);
-static_assert(move{square::a1, square::b2, pieces::q}.to() == square::b2);
-static_assert(move{square::a1, square::b2, pieces::q}.promotion() == pieces::q);
+static_assert(move{square::a1, square::b2, ptype::queen}.from() == square::a1);
+static_assert(move{square::a1, square::b2, ptype::queen}.to() == square::b2);
+static_assert(move{square::a1, square::b2, ptype::queen}.promote_to() == ptype::queen);
 
 struct board {
   constexpr board() = default;
