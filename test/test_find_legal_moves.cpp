@@ -431,3 +431,33 @@ TEST(FindLegalMoves, DiscoveredChecks) {
   const auto result = pawntificate::find_legal_moves(uut);
   ASSERT_TRUE(result.empty());
 }
+
+TEST(FindLegalMoves, StartPos) {
+  pawntificate::board uut;
+  const auto result = pawntificate::find_legal_moves(uut);
+  ASSERT_THAT(result, UnorderedElementsAreArray({
+    // pawns
+    move(square::a2, square::a3),
+    move(square::a2, square::a4),
+    move(square::b2, square::b3),
+    move(square::b2, square::b4),
+    move(square::c2, square::c3),
+    move(square::c2, square::c4),
+    move(square::d2, square::d3),
+    move(square::d2, square::d4),
+    move(square::e2, square::e3),
+    move(square::e2, square::e4),
+    move(square::f2, square::f3),
+    move(square::f2, square::f4),
+    move(square::g2, square::g3),
+    move(square::g2, square::g4),
+    move(square::h2, square::h3),
+    move(square::h2, square::h4),
+
+    // knights
+    move(square::b1, square::a3),
+    move(square::b1, square::c3),
+    move(square::g1, square::f3),
+    move(square::g1, square::h3)
+  }));
+}

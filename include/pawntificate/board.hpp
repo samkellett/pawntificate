@@ -352,8 +352,6 @@ struct board {
     // we don't do much error checking of the format for performance reasons.
     const auto end{std::end(move_list)};
     for (auto c = std::begin(move_list); c != end;) {
-      flip_colour(active);
-
       assert(std::distance(c, end) >= 4);
       const auto from = to_square(*c, *(c + 1));
       const auto to = to_square(*(c + 2), *(c + 3));
@@ -363,26 +361,26 @@ struct board {
       if (from == square::e1 && to == square::g1) {
         // white castle short
         set_square(square::e1, pieces::_);
-        set_square(square::f1, pieces::r);
-        set_square(square::g1, pieces::k);
+        set_square(square::f1, pieces::R);
+        set_square(square::g1, pieces::K);
         set_square(square::h1, pieces::_);
       } else if (from == square::e8 && to == square::g8) {
         // black castle short
         set_square(square::e8, pieces::_);
-        set_square(square::f8, pieces::R);
-        set_square(square::g8, pieces::K);
+        set_square(square::f8, pieces::r);
+        set_square(square::g8, pieces::k);
         set_square(square::h8, pieces::_);
       } else if (from == square::e1 && to == square::c1) {
         // white castle long
         set_square(square::e1, pieces::_);
-        set_square(square::d1, pieces::r);
-        set_square(square::c1, pieces::k);
+        set_square(square::d1, pieces::R);
+        set_square(square::c1, pieces::K);
         set_square(square::a1, pieces::_);
       } else if (from == square::e8 && to == square::c8) {
         // black castle long
         set_square(square::e8, pieces::_);
-        set_square(square::d8, pieces::R);
-        set_square(square::c8, pieces::K);
+        set_square(square::d8, pieces::r);
+        set_square(square::c8, pieces::k);
         set_square(square::a8, pieces::_);
       } else {
         auto &from_square = piece_board[std::size_t(from)];
@@ -401,13 +399,13 @@ struct board {
         // if a pawn has just moved onto the en passant square then remove the
         // pawn on the new rank.
         if (is_pawn(piece) && to == en_passant) {
-          const auto pawn = move_by_rank(to, active == colour::white ? 1 : -1);
+          const auto pawn = move_by_rank(to, active == colour::white ? -1 : 1);
           set_square(pawn, pieces::_);
         }
 
         // if this is a 2 square pawn move set the en passant square
         if (is_pawn(piece) && rank_distance(to, from) == 2) {
-          en_passant = move_by_rank(to, active == colour::white ? 1 : -1);
+          en_passant = move_by_rank(to, active == colour::white ? -1 : 1);
         } else {
           en_passant = square::_;
         }
@@ -419,6 +417,7 @@ struct board {
       if (c != std::end(move_list)) {
         c++;
       }
+      flip_colour(active);
     }
   }
 
@@ -432,14 +431,14 @@ struct board {
     using namespace pieces;
 
     return cxx::make_array(
-      r, n, b, q, k, b, n, r,
-      p, p, p, p, p, p, p, p,
-      _, _, _, _, _, _, _, _,
-      _, _, _, _, _, _, _, _,
-      _, _, _, _, _, _, _, _,
-      _, _, _, _, _, _, _, _,
+      R, N, B, Q, K, B, N, R,
       P, P, P, P, P, P, P, P,
-      R, N, B, Q, K, B, N, R
+      _, _, _, _, _, _, _, _,
+      _, _, _, _, _, _, _, _,
+      _, _, _, _, _, _, _, _,
+      _, _, _, _, _, _, _, _,
+      p, p, p, p, p, p, p, p,
+      r, n, b, q, k, b, n, r
     );
   }();
 };
