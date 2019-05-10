@@ -2,10 +2,29 @@
 
 #include <pawntificate/board.hpp>
 
+using namespace std::literals;
+
 using namespace pawntificate::pieces;
 
 using pawntificate::colour;
+using pawntificate::move;
 using pawntificate::square;
+
+class Moves : public ::testing::TestWithParam<std::pair<move, std::string_view>> {};
+
+TEST_P(Moves, StringRepresentation) {
+  const auto [uut, expected] = GetParam();
+
+  std::stringstream ss;
+  ss << uut;
+
+  ASSERT_EQ(ss.str(), expected);
+}
+
+INSTANTIATE_TEST_SUITE_P(SomeMoves, Moves, ::testing::Values(
+  std::make_pair(move{square::e2, square::e4}, "e2e4"sv),
+  std::make_pair(move{square::h7, square::h8, pawntificate::pieces::q}, "h7h8q"sv)
+));
 
 TEST(BoardState, DefaultConstructed) {
   pawntificate::board uut;

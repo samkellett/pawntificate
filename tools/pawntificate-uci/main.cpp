@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include <pawntificate/board.hpp>
+#include <pawntificate/evaluate.hpp>
 #include <pawntificate/uci_command.hpp>
 
 int main() {
@@ -12,7 +13,9 @@ int main() {
 
   while (true) {
     // block until a command is received.
-    const auto cmd = input.read_line(std::cin);
+    input.read_line(std::cin);
+
+    const auto cmd = input.next_token();
     if (cmd == "uci") {
       std::cout << "id name pawntificate\n"
                 << "uciok\n";
@@ -34,7 +37,6 @@ int main() {
           return "";
         }
       }();
-
       board = pawntificate::board(move_list);
     } else if (cmd == "go") {
       // example format: go wtime 303000 btime 301750 winc 3000 binc 3000
@@ -42,7 +44,7 @@ int main() {
       //const auto info = pawntificate::parse_move_info(input.all_tokens());
 
       // evaluate the last seen board position and return the best move.
-      //std::cout << "bestmove " << pawntificate::evaluate(board, info) << std::endl;
+      std::cout << "bestmove " << pawntificate::evaluate(board) << std::endl;
     } else if (cmd == "quit") {
       break;
     }

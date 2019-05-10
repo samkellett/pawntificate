@@ -28,6 +28,7 @@ target_include_directories(cxx INTERFACE include)
 # main project
 add_library(pawntificate
   ${CMAKE_SOURCE_DIR}/src/pawntificate/board.cpp
+  ${CMAKE_SOURCE_DIR}/src/pawntificate/evaluate.cpp
 )
 target_include_directories(pawntificate PUBLIC include)
 target_link_libraries(pawntificate PUBLIC cxx)
