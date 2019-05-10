@@ -48,7 +48,6 @@ auto king_is_safe(const board &b, const square king, const square from, const sq
 
   const auto is_safe = [&](const square new_square, const auto is_dangerous_piece) -> safe {
     // if we reach the square we care about we are safe.
-    // TODO: this doenst work as it doesnt check if this square can be attacked when it is a king we are moving...
     if (new_square == to) {
       return safe::yes;
     }
@@ -69,32 +68,27 @@ auto king_is_safe(const board &b, const square king, const square from, const sq
   const auto dangerous_straight_piece = [&](const piece p, const square s) {
     // a dangerous straight piece is a rook or a queen, or a king if it is within
     // one rank.
-    // std::cout << "straight: square=" << s << ", piece=" << p << ", rank_distance=" << (int)rank_distance(king, s) << std::endl;
-    return p == pieces::q ||
-           p == pieces::r ||
-           (p == pieces::k && file_distance(king, s) == 1);
+    return p.type() == ptype::queen ||
+           p.type() == ptype::rook ||
+           (p.type() == ptype::king && file_distance(king, s) == 1);
   };
 
   const auto dangerous_diagonal_piece = [&](const piece p, const square s) {
     // a dangerous diagonal piece is a bishop or a queen, or a king if it is within
     // one file and one rank or a pawn on the correct side (so that the pawn attacks "up")
-    // std::cout << "diagonal: square=" << s << ", piece=" << p
-    //           << ", file_distance=" << (int)file_distance(king, s) 
-    //           << ", rank_distance=" << (int)rank_distance(king, s) << std::endl;
     const std::int8_t enemy_pawn_direction = b.active != colour::white ? -1 : 1;
 
-    return p == pieces::q ||
-           p == pieces::b ||
-           (p == pieces::k && file_distance(king, s) == 1 && rank_distance(king, s) == 1) ||
-           (p == pieces::p && file_distance(king, s) == 1 && signed_rank_distance(king, s) == enemy_pawn_direction);
+    return p.type() == ptype::queen ||
+           p.type() == ptype::bishop ||
+           (p.type() == ptype::king && file_distance(king, s) == 1 && rank_distance(king, s) == 1) ||
+           (p.type() == ptype::pawn && file_distance(king, s) == 1 && signed_rank_distance(king, s) == enemy_pawn_direction);
   };
 
   const auto dangerous_knight = [&](const piece p, [[maybe_unused]] const square s) {
-    return p == pieces::n;
+    return p.type() == ptype::knight;
   };
 
   // up
-  // std::cout << "king is safe up" << std::endl;
   for (auto r = king_rank - 1; r >= 0; --r) {
     const auto up = make_square(king_file, r);
     if (const auto s = is_safe(up, dangerous_straight_piece); s != safe::unknown) {
@@ -107,7 +101,6 @@ auto king_is_safe(const board &b, const square king, const square from, const sq
   }
 
   // down
-  // std::cout << "king is safe down" << std::endl;
   for (auto r = king_rank + 1; r < 8; ++r) {
     const auto down = make_square(king_file, r);
     if (const auto s = is_safe(down, dangerous_straight_piece); s != safe::unknown) {
@@ -120,7 +113,6 @@ auto king_is_safe(const board &b, const square king, const square from, const sq
   }
 
   // left
-  // std::cout << "king is safe left" << std::endl;
   for (auto f = king_file - 1; f >= 0; --f) {
     const auto left = make_square(f, king_rank);
     if (const auto s = is_safe(left, dangerous_straight_piece); s != safe::unknown) {
@@ -133,7 +125,6 @@ auto king_is_safe(const board &b, const square king, const square from, const sq
   }
 
   // right
-  // std::cout << "king is safe right" << std::endl;
   for (auto f = king_file + 1; f < 8; ++f) {
     const auto right = make_square(f, king_rank);
     if (const auto s = is_safe(right, dangerous_straight_piece); s != safe::unknown) {
@@ -146,7 +137,6 @@ auto king_is_safe(const board &b, const square king, const square from, const sq
   }
 
   // up-left
-  // std::cout << "king is safe up left" << std::endl;
   for (auto r = king_rank - 1, f = king_file - 1; r >= 0 && f >= 0; --r, --f) {
     const auto upleft = make_square(f, r);
     if (const auto s = is_safe(upleft, dangerous_diagonal_piece); s != safe::unknown) {
@@ -159,7 +149,6 @@ auto king_is_safe(const board &b, const square king, const square from, const sq
   }
 
   // up-right
-  // std::cout << "king is safe up right" << std::endl;
   for (auto r = king_rank - 1, f = king_file + 1; r >= 0 && f < 8; --r, ++f) {
     const auto upright = make_square(f, r);
     if (const auto s = is_safe(upright, dangerous_diagonal_piece); s != safe::unknown) {
@@ -172,7 +161,6 @@ auto king_is_safe(const board &b, const square king, const square from, const sq
   }
 
   // down-left
-  // std::cout << "king is safe down left" << std::endl;
   for (auto r = king_rank + 1, f = king_file - 1; r < 8 && f >= 0; ++r, --f) {
     const auto downleft = make_square(f, r);
     if (const auto s = is_safe(downleft, dangerous_diagonal_piece); s != safe::unknown) {
@@ -185,7 +173,6 @@ auto king_is_safe(const board &b, const square king, const square from, const sq
   }
 
   // down-right
-  // std::cout << "king is safe down right" << std::endl;
   for (auto r = king_rank + 1, f = king_file + 1; r < 8 && f < 8; ++r, ++f) {
     const auto downright = make_square(f, r);
     if (const auto s = is_safe(downright, dangerous_diagonal_piece); s != safe::unknown) {
@@ -235,7 +222,6 @@ public:
   }
 
   auto add_king_move(const square from, const square to) -> void {
-    // std::cout << "add king move " << from << to << std::endl;
     if (king_is_safe(b, to, square::_, square::_)) {
       moves.emplace_back(from, to);
     }

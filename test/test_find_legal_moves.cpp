@@ -491,3 +491,41 @@ TEST(FindLegalMoves, e2e4) {
     move(square::g8, square::h6)
   }));
 }
+
+TEST(FindLegalMoves, CheckMate) {
+  pawntificate::board uut(colour::black, {
+    R, N, B, _, K, B, N, R,
+    P, P, P, P, _, P, P, _,
+    _, _, _, _, _, _, _, P,
+    _, _, _, _, P, _, _, _,
+    _, _, _, _, _, _, p, Q,
+    _, _, _, _, _, p, _, _,
+    p, p, p, p, p, _, _, p,
+    r, n, b, q, k, b, n, r
+  });
+
+  const auto result = pawntificate::find_legal_moves(uut);
+  ASSERT_TRUE(result.empty());
+}
+
+TEST(FindLegalMoves, BlockCheck) {
+  pawntificate::board uut(colour::black, {
+    R, N, B, Q, K, _, N, R,
+    P, P, P, _, _, P, P, P,
+    _, _, _, _, P, _, _, _,
+    _, _, _, P, _, _, _, _,
+    _, B, _, p, _, _, _, _,
+    _, _, _, _, _, _, _, p,
+    p, p, p, _, p, p, p, _,
+    r, n, b, q, k, b, n, r
+  });
+
+  const auto result = pawntificate::find_legal_moves(uut);
+  ASSERT_THAT(result, UnorderedElementsAreArray({
+    move(square::b8, square::c6),
+    move(square::b8, square::d7),
+    move(square::c8, square::d7),
+    move(square::d8, square::d7),
+    move(square::c7, square::c6)
+  }));
+}
