@@ -30,7 +30,7 @@ INSTANTIATE_TEST_SUITE_P(SomeMoves, Moves, ::testing::Values(
 ));
 
 TEST(BoardState, DefaultConstructed) {
-  pawntificate::board uut;
+  constexpr pawntificate::board uut;
   ASSERT_EQ(uut, pawntificate::board(colour::white, {
     R, N, B, Q, K, B, N, R,
     P, P, P, P, P, P, P, P,
@@ -49,8 +49,8 @@ TEST(BoardState, NoMoves) {
 }
 
 TEST(BoardState, SingleMove) {
-  pawntificate::board uut("e2e4");
-  ASSERT_EQ(uut, pawntificate::board(colour::black, {
+  constexpr pawntificate::board uut("e2e4");
+  constexpr pawntificate::board expected(colour::black, {
     R, N, B, Q, K, B, N, R,
     P, P, P, P, _, P, P, P,
     _, _, _, _, _, _, _, _,
@@ -59,7 +59,11 @@ TEST(BoardState, SingleMove) {
     _, _, _, _, _, _, _, _,
     p, p, p, p, p, p, p, p,
     r, n, b, q, k, b, n, r
-  }, castle::all, square::e3));
+  }, castle::all, square::e3);
+
+  // this will work as soon as constexpr std::array::operator== is implemented
+  // static_assert(uut == expected);
+  ASSERT_EQ(uut, expected);
 }
 
 TEST(BoardState, TwoMoves) {

@@ -114,25 +114,21 @@ auto operator<<(std::ostream &os, const piece &p_) -> std::ostream & {
   }
 }
 
-constexpr auto to_promoted_piece(const char pawn, const colour c) -> piece {
+constexpr auto to_promoted_type(const char pawn) -> ptype {
+  using namespace pieces;
+
   // p must be one of the pieces that a pawn can promote to, lower-case only.
   assert(pawn == 'r' || pawn == 'n' || pawn == 'b' || pawn == 'q');
 
-  const auto promoted_type = [&]() -> ptype {
-    using namespace pieces;
+  switch(pawn) {
+    case 'r': return ptype::rook;
+    case 'n': return ptype::knight;
+    case 'b': return ptype::bishop;
+    case 'q': return ptype::queen;
+  }
 
-    switch(pawn) {
-      case 'r': return ptype::rook;
-      case 'n': return ptype::knight;
-      case 'b': return ptype::bishop;
-      case 'q': return ptype::queen;
-    }
-
-    assert(false && "unsupported piece promotion");
-    return ptype::_;
-  }();
-
-  return {c, promoted_type};
+  assert(false && "unsupported piece promotion");
+  return ptype::_;
 }
 
 constexpr auto is_pawn(const piece p) -> bool {
@@ -278,13 +274,14 @@ static_assert(move_by_file(square::c3, -1) == square::b3);
 
 class move {
 public:
+  constexpr move()
+  : move{square::_, square::_, ptype::_} {}
+
   constexpr move(const square from, const square to)
-  : data(static_cast<std::uint8_t>(from) | (static_cast<std::uint8_t>(to) << 6)) {}
+  : move(from, to, ptype::_) {}
 
   constexpr move(const square from, const square to, const ptype p)
-  : move(from, to) {
-    data |= static_cast<std::uint8_t>(p) << 12;
-  }
+  : data(static_cast<std::uint8_t>(from) | (static_cast<std::uint8_t>(to) << 6) | static_cast<std::uint8_t>(p) << 12) {}
 
   constexpr auto from() const -> square {
     const std::uint8_t s = data & 0b111111;
@@ -394,20 +391,28 @@ auto operator<<(std::ostream &os, const castle c) -> std::ostream & {
 }
 
 struct board {
+  // creates a board with the standard chess start position.
   constexpr board() = default;
-  board(const colour active,
-        const std::array<piece, 64> piece_board,
-        const castle castling = castle::all,
-        const square en_passant = square::_)
-    : active(active), castling(castling), en_passant(en_passant), piece_board(piece_board) {}
 
+  // boards are cheap to copy.
+  constexpr board(const board &b) = default;
+  constexpr auto operator=(const board &b) -> board & = default;
+
+  constexpr board(const colour active,
+                  const std::array<piece, 64> piece_board,
+                  const castle castling = castle::all,
+                  const square en_passant = square::_)
+  : active(active), castling(castling), en_passant(en_passant), piece_board(piece_board) {}
+
+  // create a new board from an existing one and a new move.
+  explicit constexpr board(const board &b, const move m) : board(b) {
+    make_move(m);
+  }
+
+  // create a board from a list of UCI moves.
   explicit constexpr board(const std::string_view move_list) {
-    const auto set_square = [this](const square s, const piece p) {
-      piece_board[static_cast<std::size_t>(s)] = p;
-    };
-
     // move_list will have the format like: a1a2 b2b4 c5d6 a7a8q (promotion).
-    // we don't do much error checking of the format for performance reasons.
+    // we don't do any error checking of the format for performance reasons.
     const auto end{std::end(move_list)};
     for (auto c = std::begin(move_list); c != end;) {
       assert(std::distance(c, end) >= 4);
@@ -415,100 +420,113 @@ struct board {
       const auto to = to_square(*(c + 2), *(c + 3));
       std::advance(c, 4);
 
-      // if a king just moved that side can no longer castle either way. if a
-      // rook moved castling to that side of the board is no longer valid. same
-      // logic applies if their squares were moved into (ie they got captured).
-      const auto update_castling_rights = [&](const square s) {
-        switch(s) {
-          case square::e1:
-            castling &= ~castle::white;
-            break;
-          case square::e8:
-            castling &= ~castle::black;
-            break;
-          case square::a1:
-            castling &= ~castle::white_long;
-            break;
-          case square::h1:
-            castling &= ~castle::white_short;
-            break;
-          case square::a8:
-            castling &= ~castle::black_long;
-            break;
-          case square::h8:
-            castling &= ~castle::black_short;
-            break;
-          default:
-            // not a castling square.
-            break;
-        }
-      };
-
-      update_castling_rights(from);
-      update_castling_rights(to);
-
-      // is this a castling move?
-      if (from == square::e1 && to == square::g1) {
-        // white castle short
-        set_square(square::e1, pieces::_);
-        set_square(square::f1, pieces::R);
-        set_square(square::g1, pieces::K);
-        set_square(square::h1, pieces::_);
-      } else if (from == square::e8 && to == square::g8) {
-        // black castle short
-        set_square(square::e8, pieces::_);
-        set_square(square::f8, pieces::r);
-        set_square(square::g8, pieces::k);
-        set_square(square::h8, pieces::_);
-      } else if (from == square::e1 && to == square::c1) {
-        // white castle long
-        set_square(square::e1, pieces::_);
-        set_square(square::d1, pieces::R);
-        set_square(square::c1, pieces::K);
-        set_square(square::a1, pieces::_);
-      } else if (from == square::e8 && to == square::c8) {
-        // black castle long
-        set_square(square::e8, pieces::_);
-        set_square(square::d8, pieces::r);
-        set_square(square::c8, pieces::k);
-        set_square(square::a8, pieces::_);
-      } else {
-        auto &from_square = piece_board[std::size_t(from)];
-        auto &to_square = piece_board[std::size_t(to)];
-
-        // check for promotion, otherwise the piece is whatever was already at
-        // the from square.
-        const auto piece = [&] {
-          if (c != end && *c != ' ') {
-            return to_promoted_piece(*c++, active);
-          } else {
-            return from_square;
-          }
-        }();
-
-        // if a pawn has just moved onto the en passant square then remove the
-        // pawn on the new rank.
-        if (is_pawn(piece) && to == en_passant) {
-          const auto pawn = move_by_rank(to, active == colour::white ? -1 : 1);
-          set_square(pawn, pieces::_);
-        }
-
-        // if this is a 2 square pawn move set the en passant square
-        if (is_pawn(piece) && rank_distance(to, from) == 2) {
-          en_passant = move_by_rank(to, active == colour::white ? -1 : 1);
-        } else {
-          en_passant = square::_;
-        }
-
-        to_square = piece;
-        from_square = pieces::_;
+      ptype promotion{ptype::_};
+      if (c != end && *c != ' ') {
+        promotion = to_promoted_type(*c++);
       }
+
+      make_move(from, to, promotion);
 
       if (c != std::end(move_list)) {
         c++;
       }
-      flip_colour(active);
     }
+  }
+
+  constexpr auto make_move(const square from, const square to, const ptype promotion) -> void {
+    const auto set_square = [this](const square s, const piece p) {
+      piece_board[static_cast<std::size_t>(s)] = p;
+    };
+
+    // if a king just moved that side can no longer castle either way. if a
+    // rook moved castling to that side of the board is no longer valid. same
+    // logic applies if their squares were moved into (ie they got captured).
+    const auto update_castling_rights = [&](const square s) {
+      switch(s) {
+        case square::e1:
+          castling &= ~castle::white;
+          break;
+        case square::e8:
+          castling &= ~castle::black;
+          break;
+        case square::a1:
+          castling &= ~castle::white_long;
+          break;
+        case square::h1:
+          castling &= ~castle::white_short;
+          break;
+        case square::a8:
+          castling &= ~castle::black_long;
+          break;
+        case square::h8:
+          castling &= ~castle::black_short;
+          break;
+        default:
+          // not a castling square.
+          break;
+      }
+    };
+
+    update_castling_rights(from);
+    update_castling_rights(to);
+
+    // is this a castling move?
+    if (from == square::e1 && to == square::g1) {
+      // white castle short
+      set_square(square::e1, pieces::_);
+      set_square(square::f1, pieces::R);
+      set_square(square::g1, pieces::K);
+      set_square(square::h1, pieces::_);
+    } else if (from == square::e8 && to == square::g8) {
+      // black castle short
+      set_square(square::e8, pieces::_);
+      set_square(square::f8, pieces::r);
+      set_square(square::g8, pieces::k);
+      set_square(square::h8, pieces::_);
+    } else if (from == square::e1 && to == square::c1) {
+      // white castle long
+      set_square(square::e1, pieces::_);
+      set_square(square::d1, pieces::R);
+      set_square(square::c1, pieces::K);
+      set_square(square::a1, pieces::_);
+    } else if (from == square::e8 && to == square::c8) {
+      // black castle long
+      set_square(square::e8, pieces::_);
+      set_square(square::d8, pieces::r);
+      set_square(square::c8, pieces::k);
+      set_square(square::a8, pieces::_);
+    } else {
+      auto &from_square = piece_board[std::size_t(from)];
+      auto &to_square = piece_board[std::size_t(to)];
+
+      // check for promotion, otherwise the piece is whatever was already at
+      // the from square.
+      const auto p = promotion == ptype::_ ? from_square : piece{active, promotion};
+
+      // if a pawn has just moved onto the en passant square then remove the
+      // pawn on the new rank.
+      if (is_pawn(p) && to == en_passant) {
+        const auto pawn = move_by_rank(to, active == colour::white ? -1 : 1);
+        set_square(pawn, pieces::_);
+      }
+
+      // if this is a 2 square pawn move set the en passant square
+      if (is_pawn(p) && rank_distance(to, from) == 2) {
+        en_passant = move_by_rank(to, active == colour::white ? -1 : 1);
+      } else {
+        en_passant = square::_;
+      }
+
+      to_square = p;
+      from_square = pieces::_;
+    }
+
+
+    flip_colour(active);
+  }
+
+  constexpr auto make_move(const move m) -> void {
+    make_move(m.from(), m.to(), m.promote_to());
   }
 
   colour active = colour::white;
@@ -534,8 +552,7 @@ struct board {
   }();
 };
 
-inline
-auto operator==(const board &lhs, const board &rhs) -> bool {
+constexpr auto operator==(const board &lhs, const board &rhs) -> bool {
   return lhs.active == rhs.active
     && lhs.en_passant == rhs.en_passant
     && lhs.castling == rhs.castling

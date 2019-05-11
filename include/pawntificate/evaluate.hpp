@@ -1,14 +1,14 @@
 #ifndef PAWNTIFICATE_EVALUATE_HPP
 #define PAWNTIFICATE_EVALUATE_HPP
 
-#include <string>
-
 namespace pawntificate {
 
 struct board;
 
+class move;
+
 // for a given board, return the strongest move in UCI format.
-auto evaluate(const board &b) -> std::string;
+auto evaluate(const board &b) -> move;
 
 } // namespace pawntificate
 
