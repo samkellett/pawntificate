@@ -452,11 +452,11 @@ inline
 auto operator<<(std::ostream &os, const board &b) -> std::ostream & {
   os << b.piece_board[0];
   for (unsigned i = 1; i < b.piece_board.size(); ++i) {
-    os << b.piece_board[i];
-
-    if (i % 8 == 0) {
+    if (i > 0 && i % 8 == 0) {
       os << '/';
     }
+
+    os << b.piece_board[i];
   }
 
   return os << ' ' << b.active << ' ' << b.en_passant;

@@ -530,3 +530,18 @@ TEST(FindLegalMoves, BlockCheck) {
     move(square::c7, square::c6)
   }));
 }
+
+// bugs from real games
+
+TEST(RealGame, CheckFromKnight) {
+  // FEN: r1b1kbnr/pppp1ppp/8/4q3/1P6/2B4N/P1n1BPPP/RN1QK1R1 w Qkq - 0 11
+  pawntificate::board uut("g1h3 e7e5 d2d4 e5d4 h1g1 d8f6 c1f4 d4d3 b2b4 f6d6 "
+                          "e2e4 d3d2 f4d2 b8c6 e4e5 d6e5 f1e2 c6d4 d2c3 d4c2");
+
+  const auto result = pawntificate::find_legal_moves(uut);
+  ASSERT_THAT(result, UnorderedElementsAreArray({
+    move(square::d1, square::c2),
+    move(square::e1, square::d2),
+    move(square::e1, square::f1)
+  }));
+}

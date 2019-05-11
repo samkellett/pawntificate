@@ -84,10 +84,6 @@ auto king_is_safe(const board &b, const square king, const square from, const sq
            (p.type() == ptype::pawn && file_distance(king, s) == 1 && signed_rank_distance(king, s) == enemy_pawn_direction);
   };
 
-  const auto dangerous_knight = [&](const piece p, [[maybe_unused]] const square s) {
-    return p.type() == ptype::knight;
-  };
-
   // up
   for (auto r = king_rank - 1; r >= 0; --r) {
     const auto up = make_square(king_file, r);
@@ -191,12 +187,9 @@ auto king_is_safe(const board &b, const square king, const square from, const sq
     }
 
     const auto knight_square = make_square(king_file + f, king_rank + r);
-    if (const auto s = is_safe(knight_square, dangerous_knight); s != safe::unknown) {
-      if (s == safe::yes) {
-        break;
-      } else {
-        return false;
-      }
+    const auto p = get_piece(b, knight_square);
+    if (knight_square != to && p.type() == ptype::knight && p.colour() != b.active) {
+      return false;
     }
   }
 
