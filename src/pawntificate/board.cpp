@@ -132,32 +132,8 @@ auto king_is_safe(const board &b, const square king, const square from, const sq
     }
   }
 
-  // up-left
-  for (auto r = king_rank - 1, f = king_file - 1; r >= 0 && f >= 0; --r, --f) {
-    const auto upleft = make_square(f, r);
-    if (const auto s = is_safe(upleft, dangerous_diagonal_piece); s != safe::unknown) {
-      if (s == safe::yes) {
-        break;
-      } else {
-        return false;
-      }
-    }
-  }
-
-  // up-right
-  for (auto r = king_rank - 1, f = king_file + 1; r >= 0 && f < 8; --r, ++f) {
-    const auto upright = make_square(f, r);
-    if (const auto s = is_safe(upright, dangerous_diagonal_piece); s != safe::unknown) {
-      if (s == safe::yes) {
-        break;
-      } else {
-        return false;
-      }
-    }
-  }
-
   // down-left
-  for (auto r = king_rank + 1, f = king_file - 1; r < 8 && f >= 0; ++r, --f) {
+  for (auto r = king_rank - 1, f = king_file - 1; r >= 0 && f >= 0; --r, --f) {
     const auto downleft = make_square(f, r);
     if (const auto s = is_safe(downleft, dangerous_diagonal_piece); s != safe::unknown) {
       if (s == safe::yes) {
@@ -169,9 +145,33 @@ auto king_is_safe(const board &b, const square king, const square from, const sq
   }
 
   // down-right
-  for (auto r = king_rank + 1, f = king_file + 1; r < 8 && f < 8; ++r, ++f) {
+  for (auto r = king_rank - 1, f = king_file + 1; r >= 0 && f < 8; --r, ++f) {
     const auto downright = make_square(f, r);
     if (const auto s = is_safe(downright, dangerous_diagonal_piece); s != safe::unknown) {
+      if (s == safe::yes) {
+        break;
+      } else {
+        return false;
+      }
+    }
+  }
+
+  // up-left
+  for (auto r = king_rank + 1, f = king_file - 1; r < 8 && f >= 0; ++r, --f) {
+    const auto upleft = make_square(f, r);
+    if (const auto s = is_safe(upleft, dangerous_diagonal_piece); s != safe::unknown) {
+      if (s == safe::yes) {
+        break;
+      } else {
+        return false;
+      }
+    }
+  }
+
+  // up-right
+  for (auto r = king_rank + 1, f = king_file + 1; r < 8 && f < 8; ++r, ++f) {
+    const auto upright = make_square(f, r);
+    if (const auto s = is_safe(upright, dangerous_diagonal_piece); s != safe::unknown) {
       if (s == safe::yes) {
         break;
       } else {
@@ -215,7 +215,7 @@ public:
   }
 
   auto add_king_move(const square from, const square to) -> void {
-    if (king_is_safe(b, to, square::_, square::_)) {
+    if (king_is_safe(b, to, from, square::_)) {
       moves.emplace_back(from, to);
     }
   }
@@ -406,24 +406,8 @@ auto find_legal_bishop_moves(const square s,
     }
   };
 
-  // up-left
-  for (auto r = bishop_rank - 1, f = bishop_file - 1; r >= 0 && f >= 0; --r, --f) {
-    const auto upleft = make_square(f, r);
-    if (!add_move(upleft)) {
-      break;
-    }
-  }
-
-  // up-right
-  for (auto r = bishop_rank - 1, f = bishop_file + 1; r >= 0 && f < 8; --r, ++f) {
-    const auto upright = make_square(f, r);
-    if (!add_move(upright)) {
-      break;
-    }
-  }
-
   // down-left
-  for (auto r = bishop_rank + 1, f = bishop_file - 1; r < 8 && f >= 0; ++r, --f) {
+  for (auto r = bishop_rank - 1, f = bishop_file - 1; r >= 0 && f >= 0; --r, --f) {
     const auto downleft = make_square(f, r);
     if (!add_move(downleft)) {
       break;
@@ -431,9 +415,25 @@ auto find_legal_bishop_moves(const square s,
   }
 
   // down-right
-  for (auto r = bishop_rank + 1, f = bishop_file + 1; r < 8 && f < 8; ++r, ++f) {
+  for (auto r = bishop_rank - 1, f = bishop_file + 1; r >= 0 && f < 8; --r, ++f) {
     const auto downright = make_square(f, r);
     if (!add_move(downright)) {
+      break;
+    }
+  }
+
+  // up-left
+  for (auto r = bishop_rank + 1, f = bishop_file - 1; r < 8 && f >= 0; ++r, --f) {
+    const auto upleft = make_square(f, r);
+    if (!add_move(upleft)) {
+      break;
+    }
+  }
+
+  // up-right
+  for (auto r = bishop_rank + 1, f = bishop_file + 1; r < 8 && f < 8; ++r, ++f) {
+    const auto upright = make_square(f, r);
+    if (!add_move(upright)) {
       break;
     }
   }

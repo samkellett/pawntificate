@@ -545,3 +545,23 @@ TEST(RealGame, CheckFromKnight) {
     move(square::e1, square::f1)
   }));
 }
+
+TEST(RealGame, CheckFromPawn) {
+  // FEN: r3k1nr/8/3b3B/pN2p2P/B5b1/R3p2P/3pK3/1R6 w kq - 2 38
+  pawntificate::board uut("e2e3 e7e5 g1h3 b8c6 h3g1 d7d5 f1a6 b7b5 h2h3 c6b8 "
+                          "f2f4 c7c5 a6b5 c8d7 d1e2 d8h4 e1d1 h4e1 d1e1 f8d6 "
+                          "g1f3 f7f5 b5a4 g7g5 g2g4 h7h5 e2g2 a7a5 b1c3 b8a6 "
+                          "g4h5 g5f4 g2g3 f4e3 c3b5 e3d2 f3d2 a6b4 e1e2 b4c2 "
+                          "d2e4 c2d4 e2f1 d4f3 c1h6 f3h2 f1g1 h2g4 a2a3 g4e3 "
+                          "b2b4 e3d1 g1g2 d1c3 a1b1 c3e2 g2f3 e2g3 f3g3 f5e4 "
+                          "b1b3 c5b4 h1f1 b4a3 g3f2 d5d4 f1b1 d4d3 b3a3 e4e3 "
+                          "f2e1 d3d2 e1e2 d7g4");
+
+  const auto result = pawntificate::find_legal_moves(uut);
+  ASSERT_THAT(result, UnorderedElementsAreArray({
+    move(square::h3, square::g4),
+    move(square::e2, square::e3),
+    move(square::e2, square::d3),
+    move(square::e2, square::f1)
+  }));
+}
