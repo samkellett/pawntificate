@@ -444,7 +444,7 @@ auto find_legal_king_moves(const square s,
                            move_generator &moves) -> void {
   // legal king moves:
   //   one in every direction
-  //   TODO: castling
+  //   castling
   const auto king_colour = get_piece(b, s).colour();
 
   std::array<P, 8> offsets{
@@ -465,6 +465,34 @@ auto find_legal_king_moves(const square s,
       moves.add_king_move(s, new_square);
     } else {
       assert(other_piece.colour() == king_colour);
+    }
+  }
+
+  // if we still have castling rights and are not in check try castling
+  const auto castling = b.castling & (king_colour == colour::white ? castle::white : castle::black);
+  const std::uint8_t top_rank = king_colour == colour::white ? 0 : 7;
+
+  if (castling != castle::_ && king_is_safe(b, s, square::_, square::_)) {
+    // to castle all squares between the king and the rook must be empty and not attacked.
+    // add_king_move will alway check the final square so we don't need to do that here
+    // and we already know we're not currently in check so we just need to check that the
+    // in between square is safe.
+    const auto is_empty_square = [&](const std::uint8_t file) {
+      return get_piece(b, make_square(file, top_rank)).type() == ptype::_;
+    };
+
+    if ((castling & castle::long_) != castle::_) {
+      const auto empty_squares = is_empty_square(1) && is_empty_square(2) && is_empty_square(3);
+      if (empty_squares && king_is_safe(b, make_square(3, top_rank), square::_, square::_)) {
+        moves.add_king_move(s, make_square(2, top_rank));
+      }
+    }
+
+    if ((castling & castle::short_) != castle::_) {
+      const auto empty_squares = is_empty_square(5) && is_empty_square(6);
+      if (empty_squares && king_is_safe(b, make_square(5, top_rank), square::_, square::_)) {
+        moves.add_king_move(s, make_square(6, top_rank));
+      }
     }
   }
 }

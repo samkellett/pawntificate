@@ -4,6 +4,7 @@
 
 using namespace pawntificate::pieces;
 
+using pawntificate::castle;
 using pawntificate::colour;
 using pawntificate::move;
 using pawntificate::ptype;
@@ -11,6 +12,9 @@ using pawntificate::square;
 
 namespace pieces = pawntificate::pieces;
 
+using ::testing::AnyOf;
+using ::testing::Contains;
+using ::testing::Not;
 using ::testing::UnorderedElementsAreArray;
 
 TEST(FindLegalMoves, WhitePawns) {
@@ -23,7 +27,7 @@ TEST(FindLegalMoves, WhitePawns) {
     _, _, _, _, _, K, _, _,
     P, _, _, _, P, _, _, _,
     _, _, _, q, _, _, _, _
-  }, square::g6);
+  }, castle::_, square::g6);
 
   const auto result = pawntificate::find_legal_moves(uut);
   ASSERT_THAT(result, UnorderedElementsAreArray({
@@ -76,7 +80,7 @@ TEST(FindLegalMoves, BlackPawns) {
     _, Q, p, p, Q, _, Q, _,
     p, p, p, _, _, p, _, p,
     _, _, _, _, _, _, _, _
-  }, square::g3);
+  }, castle::_, square::g3);
 
   const auto result = pawntificate::find_legal_moves(uut);
   ASSERT_THAT(result, UnorderedElementsAreArray({
@@ -123,7 +127,7 @@ TEST(FindLegalMoves, WhiteRook) {
     p, _, _, _, _, _, _, _,
     _, _, _, p, _, R, _, _,
     _, _, _, _, _, _, _, _
-  });
+  }, castle::_);
 
   const auto result = pawntificate::find_legal_moves(uut);
   ASSERT_THAT(result, UnorderedElementsAreArray({
@@ -405,7 +409,7 @@ TEST(FindLegalMoves, WhiteKing) {
     _, _, _, _, _, _, _, _,
     _, _, _, _, _, _, _, _,
     _, _, _, _, _, _, _, _
-  });
+  }, castle::_);
 
   const auto result = pawntificate::find_legal_moves(uut);
   ASSERT_THAT(result, UnorderedElementsAreArray({
@@ -427,7 +431,7 @@ TEST(FindLegalMoves, DiscoveredChecks) {
     _, n, _, _, r, _, _, _,
     _, _, _, _, _, _, _, _,
     _, _, _, _, _, _, _, _
-  });
+  }, castle::_);
 
   const auto result = pawntificate::find_legal_moves(uut);
   ASSERT_TRUE(result.empty());
@@ -529,6 +533,116 @@ TEST(FindLegalMoves, BlockCheck) {
     move(square::d8, square::d7),
     move(square::c7, square::c6)
   }));
+}
+
+TEST(FindLegalMoves, WhiteCastling) {
+  pawntificate::board uut(colour::white, {
+    R, _, _, _, K, _, _, R,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _
+  });
+
+  const auto result = pawntificate::find_legal_moves(uut);
+  ASSERT_THAT(result, Contains(move(square::e1, square::c1)));
+  ASSERT_THAT(result, Contains(move(square::e1, square::g1)));
+}
+
+TEST(FindLegalMoves, WhiteCastlingBlockedByPiece) {
+  pawntificate::board uut(colour::white, {
+    R, _, _, Q, K, _, N, R,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _
+  });
+
+  const auto result = pawntificate::find_legal_moves(uut);
+  ASSERT_THAT(result, Not(Contains(AnyOf(
+    move(square::e1, square::c1),
+    move(square::e1, square::g1)
+  ))));
+}
+
+TEST(FindLegalMoves, WhiteCastlingBlockedAttacker) {
+  pawntificate::board uut(colour::white, {
+    R, _, _, _, K, _, _, R,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, q, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _
+  });
+
+  const auto result = pawntificate::find_legal_moves(uut);
+  ASSERT_THAT(result, Not(Contains(AnyOf(
+    move(square::e1, square::c1),
+    move(square::e1, square::g1)
+  ))));
+}
+
+TEST(FindLegalMoves, BlackCastling) {
+  pawntificate::board uut(colour::black, {
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    r, _, _, _, k, _, _, r
+  });
+
+  const auto result = pawntificate::find_legal_moves(uut);
+  ASSERT_THAT(result, Contains(move(square::e8, square::c8)));
+  ASSERT_THAT(result, Contains(move(square::e8, square::g8)));
+}
+
+TEST(FindLegalMoves, BlackCastlingBlockedByPiece) {
+  pawntificate::board uut(colour::black, {
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    r, _, _, q, k, _, n, r
+  });
+
+  const auto result = pawntificate::find_legal_moves(uut);
+  ASSERT_THAT(result, Not(Contains(AnyOf(
+    move(square::e8, square::c8),
+    move(square::e8, square::g8)
+  ))));
+}
+
+TEST(FindLegalMoves, BlackCastlingBlockedAttacker) {
+  pawntificate::board uut(colour::black, {
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, Q, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    r, _, _, _, k, _, _, r
+  });
+
+  const auto result = pawntificate::find_legal_moves(uut);
+  ASSERT_THAT(result, Not(Contains(AnyOf(
+    move(square::e8, square::c8),
+    move(square::e8, square::g8)
+  ))));
 }
 
 // bugs from real games

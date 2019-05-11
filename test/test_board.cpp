@@ -6,6 +6,7 @@ using namespace std::literals;
 
 using namespace pawntificate::pieces;
 
+using pawntificate::castle;
 using pawntificate::colour;
 using pawntificate::move;
 using pawntificate::ptype;
@@ -58,7 +59,7 @@ TEST(BoardState, SingleMove) {
     _, _, _, _, _, _, _, _,
     p, p, p, p, p, p, p, p,
     r, n, b, q, k, b, n, r
-  }, square::e3));
+  }, castle::all, square::e3));
 }
 
 TEST(BoardState, TwoMoves) {
@@ -72,7 +73,7 @@ TEST(BoardState, TwoMoves) {
     _, _, _, _, _, _, _, _,
     p, p, _, p, p, p, p, p,
     r, n, b, q, k, b, n, r
-  }, square::c6));
+  }, castle::all, square::c6));
 }
 
 TEST(BoardState, Capture) {
@@ -114,7 +115,7 @@ TEST(BoardState, BlackRookPromotion) {
     _, _, _, _, _, _, _, _,
     p, _, p, p, p, p, p, p,
     Q, n, b, q, k, b, n, r
-  }));
+  }, castle::black_short));
 }
 
 TEST(BoardState, CastlingShort) {
@@ -128,7 +129,7 @@ TEST(BoardState, CastlingShort) {
     _, _, _, _, _, n, _, _,
     p, p, p, p, _, p, p, p,
     r, n, b, q, _, r, k, _
-  }));
+  }, castle::_));
 }
 
 TEST(BoardState, CastlingLong) {
@@ -142,7 +143,7 @@ TEST(BoardState, CastlingLong) {
     _, _, n, _, b, _, _, _,
     p, p, p, q, p, p, p, p,
     _, _, k, r, _, b, n, r
-  }));
+  }, castle::_));
 }
 
 TEST(BoardState, EnPassantWhite) {
@@ -185,4 +186,32 @@ TEST(BoardState, NonPawnEnPassantSquare) {
     _, p, p, p, _, p, p, p,
     r, n, b, q, k, b, n, r
   }));
+}
+
+TEST(BoardState, LoseCastlingShortRights) {
+  pawntificate::board uut("h2h3 h7h6 h1h2 h8h7");
+  ASSERT_EQ(uut, pawntificate::board(colour::white, {
+    R, N, B, Q, K, B, N, _,
+    P, P, P, P, P, P, P, R,
+    _, _, _, _, _, _, _, P,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, p,
+    p, p, p, p, p, p, p, r,
+    r, n, b, q, k, b, n, _
+  }, castle::white_long | castle::black_long));
+}
+
+TEST(BoardState, LoseCastlingLongRights) {
+  pawntificate::board uut("a2a3 a7a6 a1a2 a8a7");
+  ASSERT_EQ(uut, pawntificate::board(colour::white, {
+    _, N, B, Q, K, B, N, R,
+    R, P, P, P, P, P, P, P,
+    P, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _,
+    p, _, _, _, _, _, _, _,
+    r, p, p, p, p, p, p, p,
+    _, n, b, q, k, b, n, r
+  }, castle::white_short | castle::black_short));
 }

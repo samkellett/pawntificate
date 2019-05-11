@@ -334,12 +334,72 @@ static_assert(move{square::a1, square::b2, ptype::queen}.from() == square::a1);
 static_assert(move{square::a1, square::b2, ptype::queen}.to() == square::b2);
 static_assert(move{square::a1, square::b2, ptype::queen}.promote_to() == ptype::queen);
 
+enum class castle : std::uint8_t {
+  _ = 0b0000,
+  white_short = 0b1000, white_long = 0b0100,
+  black_short = 0b0010, black_long = 0b0001,
+
+  // helper compound values
+  white = white_short | white_long,
+  black = black_short | black_long,
+
+  long_ = white_long | black_long,
+  short_ = white_short | black_short,
+
+  all = white | black
+};
+
+constexpr auto operator&(const castle lhs, const castle rhs) -> castle {
+  const auto x = static_cast<std::uint8_t>(lhs) & static_cast<std::uint8_t>(rhs);
+  return static_cast<castle>(x);
+}
+
+constexpr auto operator|(const castle lhs, const castle rhs) -> castle {
+  const auto x = static_cast<std::uint8_t>(lhs) | static_cast<std::uint8_t>(rhs);
+  return static_cast<castle>(x);
+}
+
+constexpr auto operator&=(castle &lhs, const castle rhs) -> castle & {
+  lhs = lhs & rhs;
+  return lhs;
+}
+
+constexpr auto operator~(const castle c) -> castle {
+  return castle(~static_cast<std::uint8_t>(c));
+}
+
+static_assert((castle::all & ~castle::white) == castle::black);
+static_assert((castle::white_short & ~castle::white) == castle::_);
+static_assert((castle::all & ~castle::white_short) == (castle::black | castle::white_long));
+
+inline
+auto operator<<(std::ostream &os, const castle c) -> std::ostream & {
+  if (c == castle::_) {
+    os << '-';
+  } else {
+    if ((c & castle::white_short) != castle::_) {
+      os << pieces::K;
+    }
+    if ((c & castle::white_long) != castle::_) {
+      os << pieces::Q;
+    }
+    if ((c & castle::black_short) != castle::_) {
+      os << pieces::k;
+    }
+    if ((c & castle::black_long) != castle::_) {
+      os << pieces::q;
+    }
+  }
+  return os;
+}
+
 struct board {
   constexpr board() = default;
   board(const colour active,
         const std::array<piece, 64> piece_board,
+        const castle castling = castle::all,
         const square en_passant = square::_)
-    : active(active), en_passant(en_passant), piece_board(piece_board) {}
+    : active(active), castling(castling), en_passant(en_passant), piece_board(piece_board) {}
 
   explicit constexpr board(const std::string_view move_list) {
     const auto set_square = [this](const square s, const piece p) {
@@ -354,6 +414,38 @@ struct board {
       const auto from = to_square(*c, *(c + 1));
       const auto to = to_square(*(c + 2), *(c + 3));
       std::advance(c, 4);
+
+      // if a king just moved that side can no longer castle either way. if a
+      // rook moved castling to that side of the board is no longer valid. same
+      // logic applies if their squares were moved into (ie they got captured).
+      const auto update_castling_rights = [&](const square s) {
+        switch(s) {
+          case square::e1:
+            castling &= ~castle::white;
+            break;
+          case square::e8:
+            castling &= ~castle::black;
+            break;
+          case square::a1:
+            castling &= ~castle::white_long;
+            break;
+          case square::h1:
+            castling &= ~castle::white_short;
+            break;
+          case square::a8:
+            castling &= ~castle::black_long;
+            break;
+          case square::h8:
+            castling &= ~castle::black_short;
+            break;
+          default:
+            // not a castling square.
+            break;
+        }
+      };
+
+      update_castling_rights(from);
+      update_castling_rights(to);
 
       // is this a castling move?
       if (from == square::e1 && to == square::g1) {
@@ -420,6 +512,7 @@ struct board {
   }
 
   colour active = colour::white;
+  castle castling = castle::all;
   square en_passant = square::_;
 
   // an internal representation of the chess board where each square is an index
@@ -445,6 +538,7 @@ inline
 auto operator==(const board &lhs, const board &rhs) -> bool {
   return lhs.active == rhs.active
     && lhs.en_passant == rhs.en_passant
+    && lhs.castling == rhs.castling
     && lhs.piece_board == rhs.piece_board;
 }
 
@@ -459,7 +553,7 @@ auto operator<<(std::ostream &os, const board &b) -> std::ostream & {
     os << b.piece_board[i];
   }
 
-  return os << ' ' << b.active << ' ' << b.en_passant;
+  return os << ' ' << b.active << ' ' << b.castling << ' '<< b.en_passant;
 }
 
 // given a board, list all of the legal moves available.
