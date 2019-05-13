@@ -8,34 +8,37 @@ namespace pawntificate {
 
 namespace {
 
-using score = unsigned;
+using score = int;
 
 // for now we just do a basic count of the pieces using the normal weighting.
-constexpr auto evaluate_position(const board &b) -> score {
-  score s = 0u;
+auto evaluate_position(const board &b) -> score {
+  score s = 0;
+
+  // maximise the not active colour as the board has moved on already.
+  const auto multiplier = [&](const colour c) -> score {
+    return c == b.active ? 1 : -1;
+  };
 
   for (const auto p : b.piece_board) {
-    // not active as the board has moved on already.
-    if (p.colour() != b.active) {
-      switch(p.type()) {
-        case ptype::pawn:
-          s += 1u;
-          break;
-        case ptype::rook:
-          s += 5u;
-          break;
-        case ptype::knight:
-        case ptype::bishop:
-          s += 3u;
-          break;
-        case ptype::queen:
-          s += 8u;
-          break;
-        case ptype::king:
-          // king has no score as he can never be removed.
-        case ptype::_:
-          break;
-      }
+    const auto m = multiplier(p.colour());
+    switch(p.type()) {
+      case ptype::pawn:
+        s += 1 * m;
+        break;
+      case ptype::rook:
+        s += 5 * m;
+        break;
+      case ptype::knight:
+      case ptype::bishop:
+        s += 3 * m;
+        break;
+      case ptype::queen:
+        s += 8 * m;
+        break;
+      case ptype::king:
+        // king has no score as he can never be removed.
+      case ptype::_:
+        break;
     }
   }
 
@@ -87,7 +90,7 @@ auto minimax(const board &b,
       const auto next_value = minimax(board{b, next_move}, next_move, depth - 1, false);
       value.score = std::max(value.score, next_value.score);
     }
- 
+
     return value;
   } else {
     variation value{std::numeric_limits<score>::max(), m};
@@ -108,7 +111,7 @@ auto minimax(const board &b, const std::size_t depth) -> variation {
   variation value{std::numeric_limits<score>::min(), {}};
   for (const auto m : moves) {
     const auto v = minimax(board{b, m}, m, depth - 1, false);
-    value = std::max(v, value, [](const variation &lhs, const variation &rhs) {
+    value = std::max(value, v, [](const variation &lhs, const variation &rhs) {
       return lhs.score < rhs.score;
     });
   }
