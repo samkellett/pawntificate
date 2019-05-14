@@ -12,9 +12,8 @@ using score = int;
 auto evaluate_position(const board &b) -> score {
   score s = 0;
 
-  // maximise the not active colour as the board has moved on already.
   const auto multiplier = [&](const colour c) -> score {
-    return c != b.active ? 1 : -1;
+    return c == b.active ? 1 : -1;
   };
 
   for (const auto p : b.piece_board) {
@@ -72,7 +71,8 @@ auto minimax(const board &b,
              const std::size_t depth,
              const bool maximising) -> variation {
   if (depth == 0) {
-    return {evaluate_position(b), m};
+    const auto s = evaluate_position(b);
+    return {maximising ? s : -s, m};
   }
 
   // find the legal moves. if there are none (ie. checkmate) this will naturally
@@ -118,9 +118,7 @@ auto minimax(const board &b, const std::size_t depth) -> variation {
 
 } // unnamed namespace
 
-auto evaluate(const board &b) -> move {
-  constexpr std::size_t depth = 3;
-
+auto evaluate(const board &b, const std::size_t depth) -> move {
   const auto best_variation = minimax(b, depth);
   return best_variation.move;
 }

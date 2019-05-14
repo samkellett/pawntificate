@@ -8,21 +8,29 @@ using namespace std::literals;
 using pawntificate::move;
 using pawntificate::square;
 
-TEST(Evaluate, MaximisingCorrectPlayer) {
+using ::testing::Range;
+using ::testing::TestWithParam;
+
+class Evaluate : public TestWithParam<std::size_t> {};
+
+TEST_P(Evaluate, MaximisingCorrectPlayer) {
   // white's rook is hanging, test that the evaluation is the correct way around
   // by checking that the rook is taken.
   // 1. a4 { A00 Ware Opening } a6 2. b4 e6 3. b5 axb5 4. axb5 Rxa1
   pawntificate::board uut("a2a4 a7a6 b2b4 e7e6 b4b5 a6b5 a4b5");
-  const auto result = pawntificate::evaluate(uut);
+  const auto result = pawntificate::evaluate(uut, GetParam());
   ASSERT_EQ(result, move(square::a8, square::a1));
 }
 
-TEST(Evaluate, MateInOne) {
+TEST_P(Evaluate, MateInOne) {
   // scholar's mate: 1. e4 e5 2. Qf3 Nc6 3. Bc4 Bc5 4. Qxf7#
   pawntificate::board uut("e2e4 e7e5 d1f3 b8c6 f1c4 f8c5");
-  const auto result = pawntificate::evaluate(uut);
+  const auto result = pawntificate::evaluate(uut, GetParam());
   ASSERT_EQ(result, move(square::f3, square::f7));
 }
+
+// range is right open ended.
+INSTANTIATE_TEST_SUITE_P(Depth, Evaluate, Range(1ul, pawntificate::default_depth + 2ul));
 
 // bugs from real games
 
