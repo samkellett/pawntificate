@@ -2,8 +2,6 @@
 
 #include "pawntificate/board.hpp"
 
-#include <random>
-
 namespace pawntificate {
 
 namespace {
@@ -16,7 +14,7 @@ auto evaluate_position(const board &b) -> score {
 
   // maximise the not active colour as the board has moved on already.
   const auto multiplier = [&](const colour c) -> score {
-    return c == b.active ? 1 : -1;
+    return c != b.active ? 1 : -1;
   };
 
   for (const auto p : b.piece_board) {
@@ -77,12 +75,9 @@ auto minimax(const board &b,
     return {evaluate_position(b), m};
   }
 
-  // find the legal moves. if there are none (ie. checkmate) terminate the
-  // search at this depth with a low score.
+  // find the legal moves. if there are none (ie. checkmate) this will naturally
+  // terminate the search at this depth with a low score.
   const auto moves = find_legal_moves(b);
-  if (moves.empty()) {
-    return {std::numeric_limits<score>::min(), m};
-  }
 
   if (maximising) {
     variation value{std::numeric_limits<score>::min(), m};
@@ -108,9 +103,11 @@ auto minimax(const board &b, const std::size_t depth) -> variation {
   const auto moves = find_legal_moves(b);
   assert(!moves.empty());
 
-  variation value{std::numeric_limits<score>::min(), {}};
-  for (const auto m : moves) {
+  variation value = minimax(board{b, moves[0]}, moves[0], depth - 1, false);
+  for (auto i = 1ul; i < moves.size(); ++i) {
+    const auto m = moves[i];
     const auto v = minimax(board{b, m}, m, depth - 1, false);
+
     value = std::max(value, v, [](const variation &lhs, const variation &rhs) {
       return lhs.score < rhs.score;
     });
