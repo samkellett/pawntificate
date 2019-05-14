@@ -44,18 +44,24 @@ auto evaluate_position(const board &b) -> score {
 
 /*
 
-function minimax(node, depth, maximizingPlayer) is
+function alphabeta(node, depth, α, β, maximizingPlayer) is
     if depth = 0 or node is a terminal node then
         return the heuristic value of node
     if maximizingPlayer then
         value := −∞
         for each child of node do
-            value := max(value, minimax(child, depth − 1, FALSE))
+            value := max(value, alphabeta(child, depth − 1, α, β, FALSE))
+            α := max(α, value)
+            if α ≥ β then
+                break (* β cut-off *)
         return value
-    else (* minimizing player *)
+    else
         value := +∞
         for each child of node do
-            value := min(value, minimax(child, depth − 1, TRUE))
+            value := min(value, alphabeta(child, depth − 1, α, β, TRUE))
+            β := min(β, value)
+            if α ≥ β then
+                break (* α cut-off *)
         return value
 
 */
@@ -66,10 +72,12 @@ struct variation {
 };
 
 // find the best variation by searching to a fixed depth.
-auto minimax(const board &b,
-             const move m,
-             const std::size_t depth,
-             const bool maximising) -> variation {
+auto alphabeta(const board &b,
+               const move m,
+               const std::size_t depth,
+               score alpha,
+               score beta,
+               const bool maximising) -> variation {
   if (depth == 0) {
     const auto s = evaluate_position(b);
     return {maximising ? s : -s, m};
@@ -82,16 +90,26 @@ auto minimax(const board &b,
   if (maximising) {
     variation value{std::numeric_limits<score>::min(), m};
     for (const auto next_move : moves) {
-      const auto next_value = minimax(board{b, next_move}, next_move, depth - 1, false);
+      const auto next_value =
+        alphabeta(board{b, next_move}, next_move, depth - 1, alpha, beta, false);
       value.score = std::max(value.score, next_value.score);
+      alpha = std::max(alpha, value.score);
+      if (alpha >= beta) {
+        break;
+      }
     }
 
     return value;
   } else {
     variation value{std::numeric_limits<score>::max(), m};
     for (const auto next_move : moves) {
-      const auto next_value = minimax(board{b, next_move}, next_move, depth - 1, true);
+      const auto next_value =
+        alphabeta(board{b, next_move}, next_move, depth - 1, alpha, beta, true);
       value.score = std::min(value.score, next_value.score);
+      beta = std::min(beta, value.score);
+      if (alpha >= beta) {
+        break;
+      }
     }
 
     return value;
@@ -99,14 +117,18 @@ auto minimax(const board &b,
 }
 
 // entry point: find all legal moves, find the best move for each one and return that.
-auto minimax(const board &b, const std::size_t depth) -> variation {
+auto alphabeta(const board &b, const std::size_t depth) -> variation {
   const auto moves = find_legal_moves(b);
   assert(!moves.empty());
 
-  variation value = minimax(board{b, moves[0]}, moves[0], depth - 1, false);
+  const score alpha = std::numeric_limits<score>::min();
+  const score beta = std::numeric_limits<score>::max();
+
+  variation value =
+    alphabeta(board{b, moves[0]}, moves[0], depth - 1, alpha, beta, false);
   for (auto i = 1ul; i < moves.size(); ++i) {
     const auto m = moves[i];
-    const auto v = minimax(board{b, m}, m, depth - 1, false);
+    const auto v = alphabeta(board{b, m}, m, depth - 1, alpha, beta, false);
 
     value = std::max(value, v, [](const variation &lhs, const variation &rhs) {
       return lhs.score < rhs.score;
@@ -119,7 +141,7 @@ auto minimax(const board &b, const std::size_t depth) -> variation {
 } // unnamed namespace
 
 auto evaluate(const board &b, const std::size_t depth) -> move {
-  const auto best_variation = minimax(b, depth);
+  const auto best_variation = alphabeta(b, depth);
   return best_variation.move;
 }
 
