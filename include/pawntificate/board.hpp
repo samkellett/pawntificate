@@ -30,9 +30,15 @@ constexpr auto flip_colour(colour &c) -> void{
   c = static_cast<colour>(op ^ 1u);
 }
 
+// value should relative piece strength so when sorted you get queens before pawns, etc.
 enum class ptype : std::uint8_t {
-  _ = 0b000u, pawn = 0b001u, rook = 0b010u, knight = 0b011u, bishop = 0b100u, queen = 0b101u, king = 0b110u
+  _ = 0b000u, pawn = 0b001u, knight = 0b010u, bishop = 0b011u, rook = 0b100u, queen = 0b101u, king = 0b110u
 };
+
+static_assert(ptype::_ < ptype::pawn);
+static_assert(ptype::pawn < ptype::queen);
+static_assert(ptype::rook < ptype::queen);
+static_assert(ptype::knight < ptype::rook);
 
 struct piece {
   constexpr piece() = default;
@@ -280,8 +286,17 @@ public:
   constexpr move(const square from, const square to)
   : move(from, to, ptype::_) {}
 
+  constexpr move(const square from, const square to, const bool killer)
+  : move(from, to, ptype::_, killer) {}
+
   constexpr move(const square from, const square to, const ptype p)
-  : data(static_cast<std::uint8_t>(from) | (static_cast<std::uint8_t>(to) << 6) | static_cast<std::uint8_t>(p) << 12) {}
+  : move(from, to, p, false) {}
+
+  constexpr move(const square from, const square to, const ptype p, const bool killer)
+  : data(static_cast<std::uint8_t>(from) |
+         (static_cast<std::uint8_t>(to) << 6) |
+         (static_cast<std::uint8_t>(p) << 12) |
+         (static_cast<std::uint8_t>(killer) << 15)) {}
 
   constexpr auto from() const -> square {
     const std::uint8_t s = data & 0b111111;
@@ -294,8 +309,15 @@ public:
   }
 
   constexpr auto promote_to() const -> ptype {
-    const std::uint8_t p = (data >> 12) & 0b1111;
+    const std::uint8_t p = (data >> 12) & 0b111;
     return ptype(p);
+  }
+
+  // a flag to mark this move as a potential good move. this is used in the move
+  // ordering when pruning the search space.
+  // TODO: should contain more information like cost of material captured, checks, etc...
+  constexpr auto killer() const -> bool {
+    return (data >> 15) == 1;
   }
 
 private:
@@ -313,7 +335,7 @@ constexpr auto operator==(const move &lhs, const move &rhs) -> bool {
 }
 
 inline
-auto operator<<(std::ostream &os, const move &m) -> std::ostream & {
+auto to_uci(std::ostream &os, const move &m) -> std::ostream & {
   os << m.from() << m.to();
   if (m.promote_to() != ptype::_) {
     // UCI prints promotion in lower-case so convert promotion type to black
@@ -323,13 +345,23 @@ auto operator<<(std::ostream &os, const move &m) -> std::ostream & {
   return os;
 }
 
+inline
+auto operator<<(std::ostream &os, const move &m) -> std::ostream & {
+  to_uci(os, m);
+  return os << (m.killer() ? "!" : "");
+}
+
 static_assert(move{square::a1, square::b2}.from() == square::a1);
 static_assert(move{square::a1, square::b2}.to() == square::b2);
 static_assert(move{square::a1, square::b2}.promote_to() == ptype::_);
+static_assert(!move{square::a1, square::b2}.killer());
+static_assert(move{square::a1, square::b2, true}.killer());
 
 static_assert(move{square::a1, square::b2, ptype::queen}.from() == square::a1);
 static_assert(move{square::a1, square::b2, ptype::queen}.to() == square::b2);
 static_assert(move{square::a1, square::b2, ptype::queen}.promote_to() == ptype::queen);
+static_assert(!move{square::a1, square::b2, ptype::queen}.killer());
+static_assert(move{square::a1, square::b2, ptype::queen, true}.killer());
 
 enum class castle : std::uint8_t {
   _ = 0b0000,

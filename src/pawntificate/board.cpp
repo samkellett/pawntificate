@@ -204,19 +204,19 @@ public:
 
   auto add_move(const square from, const square to) -> void {
     if (king_is_safe(b, king, from, to)) {
-      moves.emplace_back(from, to);
+      moves.emplace_back(from, to, is_killer(from, to));
     }
   }
 
   auto add_move(const square from, const square to, const ptype promotion) -> void {
     if (king_is_safe(b, king, from, to)) {
-      moves.emplace_back(from, to, promotion);
+      moves.emplace_back(from, to, promotion, is_killer(from, to));
     }
   }
 
   auto add_king_move(const square from, const square to) -> void {
     if (king_is_safe(b, to, from, square::_)) {
-      moves.emplace_back(from, to);
+      moves.emplace_back(from, to, is_killer(from, to));
     }
   }
 
@@ -225,6 +225,13 @@ public:
   }
 
 private:
+  // for now only captures are killer moves.
+  // TODO: check should be too
+  auto is_killer(const square from, const square to) const -> bool {
+    return get_piece(b, to).type() != ptype::_ ||
+      (to == b.en_passant && get_piece(b, from).type() == ptype::pawn);
+  }
+
   const board &b;
   square king;
   std::vector<move> moves;

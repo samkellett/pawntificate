@@ -17,11 +17,11 @@ using ::testing::Values;
 
 class Moves : public TestWithParam<std::pair<move, std::string_view>> {};
 
-TEST_P(Moves, FENStringRepresentation) {
+TEST_P(Moves, UCIStringRepresentation) {
   const auto [uut, expected] = GetParam();
 
   std::stringstream ss;
-  ss << uut;
+  to_uci(ss, uut);
 
   ASSERT_EQ(ss.str(), expected);
 }

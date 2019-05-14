@@ -19,14 +19,14 @@ TEST_P(Evaluate, MaximisingCorrectPlayer) {
   // 1. a4 { A00 Ware Opening } a6 2. b4 e6 3. b5 axb5 4. axb5 Rxa1
   pawntificate::board uut("a2a4 a7a6 b2b4 e7e6 b4b5 a6b5 a4b5");
   const auto result = pawntificate::evaluate(uut, GetParam());
-  ASSERT_EQ(result, move(square::a8, square::a1));
+  ASSERT_EQ(result, move(square::a8, square::a1, true));
 }
 
 TEST_P(Evaluate, MateInOne) {
   // scholar's mate: 1. e4 e5 2. Qf3 Nc6 3. Bc4 Bc5 4. Qxf7#
   pawntificate::board uut("e2e4 e7e5 d1f3 b8c6 f1c4 f8c5");
   const auto result = pawntificate::evaluate(uut, GetParam());
-  ASSERT_EQ(result, move(square::f3, square::f7));
+  ASSERT_EQ(result, move(square::f3, square::f7, true));
 }
 
 // range is right open ended.

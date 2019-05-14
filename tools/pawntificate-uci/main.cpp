@@ -44,7 +44,9 @@ int main() {
       //const auto info = pawntificate::parse_move_info(input.all_tokens());
 
       // evaluate the last seen board position and return the best move.
-      std::cout << "bestmove " << pawntificate::evaluate(board) << std::endl;
+      std::cout << "bestmove ";
+      const auto bestmove = pawntificate::evaluate(board);
+      to_uci(std::cout, bestmove) << std::endl;
     } else if (cmd == "quit") {
       break;
     }

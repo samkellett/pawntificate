@@ -33,9 +33,9 @@ TEST(FindLegalMoves, WhitePawns) {
   ASSERT_THAT(result, UnorderedElementsAreArray({
     move(square::a2, square::a3),
     move(square::a2, square::a4),
-    move(square::a2, square::b3),
+    move(square::a2, square::b3, true),
 
-    move(square::c2, square::b3),
+    move(square::c2, square::b3, true),
 
     move(square::c3, square::c4),
 
@@ -46,22 +46,22 @@ TEST(FindLegalMoves, WhitePawns) {
     move(square::a7, square::a8, ptype::bishop),
     move(square::a7, square::a8, ptype::queen),
 
-    move(square::e7, square::d8, ptype::rook),
-    move(square::e7, square::d8, ptype::knight),
-    move(square::e7, square::d8, ptype::bishop),
-    move(square::e7, square::d8, ptype::queen),
+    move(square::e7, square::d8, ptype::rook, true),
+    move(square::e7, square::d8, ptype::knight, true),
+    move(square::e7, square::d8, ptype::bishop, true),
+    move(square::e7, square::d8, ptype::queen, true),
 
     move(square::f2, square::f3),
     move(square::f2, square::f4),
-    move(square::f2, square::e3),
-    move(square::f2, square::g3),
+    move(square::f2, square::e3, true),
+    move(square::f2, square::g3, true),
 
     move(square::h2, square::h3),
     move(square::h2, square::h4),
-    move(square::h2, square::g3),
+    move(square::h2, square::g3, true),
 
     move(square::h5, square::h6),
-    move(square::h5, square::g6), // en passant
+    move(square::h5, square::g6, true), // en passant
 
     // legal king moves
     move(square::f6, square::f5),
@@ -86,9 +86,9 @@ TEST(FindLegalMoves, BlackPawns) {
   ASSERT_THAT(result, UnorderedElementsAreArray({
     move(square::a7, square::a6),
     move(square::a7, square::a5),
-    move(square::a7, square::b6),
+    move(square::a7, square::b6, true),
 
-    move(square::c7, square::b6),
+    move(square::c7, square::b6, true),
 
     move(square::c6, square::c5),
 
@@ -98,22 +98,22 @@ TEST(FindLegalMoves, BlackPawns) {
     move(square::e2, square::e1, ptype::knight),
     move(square::e2, square::e1, ptype::bishop),
     move(square::e2, square::e1, ptype::queen),
-    move(square::e2, square::d1, ptype::rook),
-    move(square::e2, square::d1, ptype::knight),
-    move(square::e2, square::d1, ptype::bishop),
-    move(square::e2, square::d1, ptype::queen),
+    move(square::e2, square::d1, ptype::rook, true),
+    move(square::e2, square::d1, ptype::knight, true),
+    move(square::e2, square::d1, ptype::bishop, true),
+    move(square::e2, square::d1, ptype::queen, true),
 
     move(square::f7, square::f6),
     move(square::f7, square::f5),
-    move(square::f7, square::e6),
-    move(square::f7, square::g6),
+    move(square::f7, square::e6, true),
+    move(square::f7, square::g6, true),
 
     move(square::h7, square::h6),
     move(square::h7, square::h5),
-    move(square::h7, square::g6),
+    move(square::h7, square::g6, true),
 
     move(square::h4, square::h3),
-    move(square::h4, square::g3) // en passant
+    move(square::h4, square::g3, true) // en passant
   }));
 }
 
@@ -132,17 +132,17 @@ TEST(FindLegalMoves, WhiteRook) {
   const auto result = pawntificate::find_legal_moves(uut);
   ASSERT_THAT(result, UnorderedElementsAreArray({
     move(square::a1, square::b1),
-    move(square::a1, square::c1),
+    move(square::a1, square::c1, true),
     move(square::a1, square::a2),
     move(square::a1, square::a3),
     move(square::a1, square::a4),
     move(square::a1, square::a5),
-    move(square::a1, square::a6),
+    move(square::a1, square::a6, true),
 
-    move(square::f3, square::e3),
+    move(square::f3, square::e3, true),
     move(square::f3, square::g3),
 
-    move(square::f7, square::d7),
+    move(square::f7, square::d7, true),
     move(square::f7, square::e7),
     move(square::f7, square::g7),
     move(square::f7, square::h7),
@@ -172,23 +172,23 @@ TEST(FindLegalMoves, BlackRook) {
   const auto result = pawntificate::find_legal_moves(uut);
   ASSERT_THAT(result, UnorderedElementsAreArray({
     move(square::a1, square::b1),
-    move(square::a1, square::c1),
+    move(square::a1, square::c1, true),
     move(square::a1, square::a2),
     move(square::a1, square::a3),
     move(square::a1, square::a4),
     move(square::a1, square::a5),
-    move(square::a1, square::a6),
+    move(square::a1, square::a6, true),
 
     move(square::f3, square::f1),
     move(square::f3, square::f2),
     move(square::f3, square::f4),
     move(square::f3, square::f5),
     move(square::f3, square::f6),
-    move(square::f3, square::e3),
+    move(square::f3, square::e3, true),
     move(square::f3, square::g3),
     move(square::f3, square::h3),
 
-    move(square::f7, square::d7),
+    move(square::f7, square::d7, true),
     move(square::f7, square::e7),
     move(square::f7, square::g7),
     move(square::f7, square::h7),
@@ -216,7 +216,7 @@ TEST(FindLegalMoves, WhiteKnight) {
     move(square::g4, square::f2),
     move(square::g4, square::h2),
     move(square::g4, square::h6),
-    move(square::g4, square::f6),
+    move(square::g4, square::f6, true),
     move(square::g4, square::e5),
 
     // legal pawn move
@@ -241,7 +241,7 @@ TEST(FindLegalMoves, BlackKnight) {
     move(square::g4, square::f2),
     move(square::g4, square::h2),
     move(square::g4, square::h6),
-    move(square::g4, square::f6),
+    move(square::g4, square::f6, true),
     move(square::g4, square::e5),
 
     // legal pawn move
@@ -269,9 +269,9 @@ TEST(FindLegalMoves, WhiteBishop) {
     move(square::b2, square::c3),
 
     move(square::d4, square::c3),
-    move(square::d4, square::e3),
+    move(square::d4, square::e3, true),
     move(square::d4, square::e5),
-    move(square::d4, square::f6),
+    move(square::d4, square::f6, true),
     move(square::d4, square::c5),
     move(square::d4, square::b6),
     move(square::d4, square::a7)
@@ -298,9 +298,9 @@ TEST(FindLegalMoves, BlackBishop) {
     move(square::b2, square::c3),
 
     move(square::d4, square::c3),
-    move(square::d4, square::e3),
+    move(square::d4, square::e3, true),
     move(square::d4, square::e5),
-    move(square::d4, square::f6),
+    move(square::d4, square::f6, true),
     move(square::d4, square::c5),
     move(square::d4, square::b6),
     move(square::d4, square::a7)
@@ -327,29 +327,29 @@ TEST(FindLegalMoves, WhiteQueen) {
     move(square::b2, square::a2),
     move(square::b2, square::c2),
     move(square::b2, square::d2),
-    move(square::b2, square::e2),
+    move(square::b2, square::e2, true),
     move(square::b2, square::a3),
-    move(square::b2, square::b3),
+    move(square::b2, square::b3, true),
     move(square::b2, square::c3),
 
     move(square::d4, square::c3),
     move(square::d4, square::d3),
     move(square::d4, square::d2),
     move(square::d4, square::d1),
-    move(square::d4, square::e3),
+    move(square::d4, square::e3, true),
     move(square::d4, square::e4),
     move(square::d4, square::f4),
     move(square::d4, square::g4),
     move(square::d4, square::h4),
     move(square::d4, square::e5),
-    move(square::d4, square::f6),
+    move(square::d4, square::f6, true),
     move(square::d4, square::d5),
-    move(square::d4, square::d6),
+    move(square::d4, square::d6, true),
     move(square::d4, square::c5),
     move(square::d4, square::b6),
     move(square::d4, square::a7),
     move(square::d4, square::c4),
-    move(square::d4, square::b4)
+    move(square::d4, square::b4, true)
   }));
 }
 
@@ -373,29 +373,29 @@ TEST(FindLegalMoves, BlackQueen) {
     move(square::b2, square::a2),
     move(square::b2, square::c2),
     move(square::b2, square::d2),
-    move(square::b2, square::e2),
+    move(square::b2, square::e2, true),
     move(square::b2, square::a3),
-    move(square::b2, square::b3),
+    move(square::b2, square::b3, true),
     move(square::b2, square::c3),
 
     move(square::d4, square::c3),
     move(square::d4, square::d3),
     move(square::d4, square::d2),
     move(square::d4, square::d1),
-    move(square::d4, square::e3),
+    move(square::d4, square::e3, true),
     move(square::d4, square::e4),
     move(square::d4, square::f4),
     move(square::d4, square::g4),
     move(square::d4, square::h4),
     move(square::d4, square::e5),
-    move(square::d4, square::f6),
+    move(square::d4, square::f6, true),
     move(square::d4, square::d5),
-    move(square::d4, square::d6),
+    move(square::d4, square::d6, true),
     move(square::d4, square::c5),
     move(square::d4, square::b6),
     move(square::d4, square::a7),
     move(square::d4, square::c4),
-    move(square::d4, square::b4)
+    move(square::d4, square::b4, true)
   }));
 }
 
@@ -417,7 +417,7 @@ TEST(FindLegalMoves, WhiteKing) {
     move(square::c4, square::c3),
     move(square::c4, square::c5),
     move(square::c4, square::b5),
-    move(square::c4, square::b4)
+    move(square::c4, square::b4, true)
   }));
 }
 
@@ -654,7 +654,7 @@ TEST(RealGame, CheckFromKnight) {
 
   const auto result = pawntificate::find_legal_moves(uut);
   ASSERT_THAT(result, UnorderedElementsAreArray({
-    move(square::d1, square::c2),
+    move(square::d1, square::c2, true),
     move(square::e1, square::d2),
     move(square::e1, square::f1)
   }));
@@ -673,8 +673,9 @@ TEST(RealGame, CheckFromPawn) {
 
   const auto result = pawntificate::find_legal_moves(uut);
   ASSERT_THAT(result, UnorderedElementsAreArray({
-    move(square::h3, square::g4),
-    move(square::e2, square::e3),
+    move(square::h3, square::g4, true)
+    ,
+    move(square::e2, square::e3, true),
     move(square::e2, square::d3),
     move(square::e2, square::f1)
   }));
