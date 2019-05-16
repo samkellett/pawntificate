@@ -9,7 +9,7 @@ struct board;
 
 class move;
 
-constexpr std::size_t default_depth = 5ul;
+constexpr std::size_t default_depth = 6ul;
 
 // for a given board, return the strongest move in UCI format.
 auto evaluate(const board &b, std::size_t depth = default_depth) -> move;

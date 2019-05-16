@@ -29,8 +29,14 @@ TEST_P(Evaluate, MateInOne) {
   ASSERT_EQ(result, move(square::f3, square::f7, true));
 }
 
-// range is right open ended.
-INSTANTIATE_TEST_SUITE_P(Depth, Evaluate, Range(1ul, pawntificate::default_depth + 2ul));
+// debug build tests one depth less. range is right open ended.
+#if NDEBUG
+constexpr std::size_t max_depth = pawntificate::default_depth + 2ul;
+#else
+constexpr std::size_t max_depth = pawntificate::default_depth + 1ul;
+#endif
+
+INSTANTIATE_TEST_SUITE_P(Depth, Evaluate, Range(1ul, max_depth));
 
 // bugs from real games
 

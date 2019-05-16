@@ -101,14 +101,25 @@ struct variation {
 // find the best variation by searching to a fixed depth.
 auto alphabeta(const board &b,
                const move m,
-               const std::size_t depth,
+               std::size_t depth,
                score alpha,
                score beta,
                const bool maximising,
+               bool move_count_pruning,
                std::mt19937 &gen) -> variation {
   if (depth == 0) {
     const auto s = evaluate_position(b);
     return {maximising ? s : -s, m};
+  }
+
+  // late move reduction for non-killer moves below a certain depth.
+  if (!move_count_pruning &&
+      !m.killer() && m.promote_to() == ptype::_ &&
+      depth >= 2 && depth <= 4) {
+    depth -= 2;
+    move_count_pruning = true;
+  } else {
+    --depth;
   }
 
   // find the legal moves. if there are none (ie. checkmate) this will naturally
@@ -118,8 +129,14 @@ auto alphabeta(const board &b,
   if (maximising) {
     variation value{std::numeric_limits<score>::min(), m};
     for (const auto next_move : moves) {
-      const auto next_value =
-        alphabeta(board{b, next_move}, next_move, depth - 1, alpha, beta, false, gen);
+      const auto next_value = alphabeta(board{b, next_move},
+                                        next_move,
+                                        depth,
+                                        alpha,
+                                        beta,
+                                        false,
+                                        move_count_pruning,
+                                        gen);
       value.score = std::max(value.score, next_value.score);
       alpha = std::max(alpha, value.score);
       if (alpha >= beta) {
@@ -131,8 +148,14 @@ auto alphabeta(const board &b,
   } else {
     variation value{std::numeric_limits<score>::max(), m};
     for (const auto next_move : moves) {
-      const auto next_value =
-        alphabeta(board{b, next_move}, next_move, depth - 1, alpha, beta, true, gen);
+      const auto next_value = alphabeta(board{b, next_move},
+                                        next_move,
+                                        depth,
+                                        alpha,
+                                        beta,
+                                        true,
+                                        move_count_pruning,
+                                        gen);
       value.score = std::min(value.score, next_value.score);
       beta = std::min(beta, value.score);
       if (alpha >= beta) {
@@ -152,11 +175,24 @@ auto alphabeta(const board &b, const std::size_t depth, std::mt19937 &gen) -> va
   const score alpha = std::numeric_limits<score>::min();
   const score beta = std::numeric_limits<score>::max();
 
-  variation value =
-    alphabeta(board{b, moves[0]}, moves[0], depth - 1, alpha, beta, false, gen);
+  variation value = alphabeta(board{b, moves[0]},
+                              moves[0],
+                              depth - 1,
+                              alpha,
+                              beta,
+                              false,
+                              false,
+                              gen);
   for (auto i = 1ul; i < moves.size(); ++i) {
     const auto m = moves[i];
-    const auto v = alphabeta(board{b, m}, m, depth - 1, alpha, beta, false, gen);
+    const auto v = alphabeta(board{b, m},
+                             m,
+                             depth - 1,
+                             alpha,
+                             beta,
+                             false, 
+                             false,
+                             gen);
 
     value = std::max(value, v, [](const variation &lhs, const variation &rhs) {
       return lhs.score < rhs.score;
