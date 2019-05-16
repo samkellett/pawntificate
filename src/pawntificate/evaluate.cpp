@@ -124,6 +124,8 @@ auto alphabeta(const board &b,
 
   // find the legal moves. if there are none (ie. checkmate) this will naturally
   // terminate the search at this depth with a low score.
+  // TODO: there is a bug here that makes stalemate and checkmate equivelent
+  // which can cause the engine to throw away a winning position.
   const auto moves = find_and_sort_legal_moves(b, gen);
 
   if (maximising) {
