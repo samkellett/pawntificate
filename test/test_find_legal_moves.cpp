@@ -673,8 +673,8 @@ TEST(RealGame, CheckFromPawn) {
 
   const auto result = pawntificate::find_legal_moves(uut);
   ASSERT_THAT(result, UnorderedElementsAreArray({
-    move(square::h3, square::g4, true)
-    ,
+    move(square::h3, square::g4, true),
+
     move(square::e2, square::e3, true),
     move(square::e2, square::d3),
     move(square::e2, square::f1)

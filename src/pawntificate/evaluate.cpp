@@ -207,8 +207,7 @@ auto alphabeta(const board &b, const std::size_t depth, std::mt19937 &gen) -> va
 auto evaluate(const board &b, const std::size_t depth) -> move {
   // TODO: eventually it would be nice to remove all randomness from the board
   // evaluation... it basically exists to hide any holes we have.
-  std::random_device rd;
-  std::mt19937 gen{rd()};
+  std::mt19937 gen;
 
   const auto best_variation = alphabeta(b, depth, gen);
   return best_variation.move;

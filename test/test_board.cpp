@@ -222,3 +222,25 @@ TEST(BoardState, LoseCastlingLongRights) {
     _, n, b, q, k, b, n, r
   }, castle::white_short | castle::black_short));
 }
+
+// bugs from real games
+
+TEST(RealGame, InvalidCastling) {
+  // FEN: 6k1/p1p2p1p/2p2p2/b7/P6P/6P1/RP1P1PK1/2r1r1NR w - - 1 23
+  pawntificate::board uut("e2e3 e7e5 a2a4 b8c6 b1c3 f8b4 a1a2 g8f6 d1f3 e8g8 "
+                          "f1e2 d7d6 c3e4 c8g4 e4f6 d8f6 f3f6 g7f6 e2g4 a8e8 "
+                          "c2c3 b4a5 e1d1 d6d5 d1e1 d5d4 c3d4 e5d4 g4d7 e8d8 "
+                          "d7c6 b7c6 e3d4 d8d4 g2g3 f8e8 e1f1 d4e4 f1g2 e4e1 "
+                          "h2h3 e1c1 h3h4 e8e1");
+
+  ASSERT_EQ(uut, pawntificate::board(colour::white, {
+    _, _, r, _, r, _, N, R,
+    R, P, _, P, _, P, K, _,
+    _, _, _, _, _, _, P, _,
+    P, _, _, _, _, _, _, P,
+    b, _, _, _, _, _, _, _,
+    _, _, p, _, _, p, _, _,
+    p, _, p, _, _, p, _, p,
+    _, _, _, _, _, _, k, _
+  }, castle::_));
+}

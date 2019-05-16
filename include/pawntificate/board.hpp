@@ -502,35 +502,37 @@ struct board {
     update_castling_rights(from);
     update_castling_rights(to);
 
+    auto &from_square = piece_board[std::size_t(from)];
+    auto &to_square = piece_board[std::size_t(to)];
+
+    const bool is_king = from_square.type() == ptype::king;
+
     // is this a castling move?
-    if (from == square::e1 && to == square::g1) {
+    if (is_king && from == square::e1 && to == square::g1) {
       // white castle short
       set_square(square::e1, pieces::_);
       set_square(square::f1, pieces::R);
       set_square(square::g1, pieces::K);
       set_square(square::h1, pieces::_);
-    } else if (from == square::e8 && to == square::g8) {
+    } else if (is_king && from == square::e8 && to == square::g8) {
       // black castle short
       set_square(square::e8, pieces::_);
       set_square(square::f8, pieces::r);
       set_square(square::g8, pieces::k);
       set_square(square::h8, pieces::_);
-    } else if (from == square::e1 && to == square::c1) {
+    } else if (is_king && from == square::e1 && to == square::c1) {
       // white castle long
       set_square(square::e1, pieces::_);
       set_square(square::d1, pieces::R);
       set_square(square::c1, pieces::K);
       set_square(square::a1, pieces::_);
-    } else if (from == square::e8 && to == square::c8) {
+    } else if (is_king && from == square::e8 && to == square::c8) {
       // black castle long
       set_square(square::e8, pieces::_);
       set_square(square::d8, pieces::r);
       set_square(square::c8, pieces::k);
       set_square(square::a8, pieces::_);
     } else {
-      auto &from_square = piece_board[std::size_t(from)];
-      auto &to_square = piece_board[std::size_t(to)];
-
       // check for promotion, otherwise the piece is whatever was already at
       // the from square.
       const auto p = promotion == ptype::_ ? from_square : piece{active, promotion};
