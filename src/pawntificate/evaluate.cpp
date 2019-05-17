@@ -2,8 +2,6 @@
 
 #include "pawntificate/board.hpp"
 
-#include <random>
-
 namespace pawntificate {
 
 namespace {
@@ -206,13 +204,17 @@ auto alphabeta(const board &b, const std::size_t depth, std::mt19937 &gen) -> va
 
 } // unnamed namespace
 
+auto evaluate(const board &b, std::mt19937 &gen, const std::size_t depth) -> move {
+  const auto best_variation = alphabeta(b, depth, gen);
+  return best_variation.move;
+}
+
 auto evaluate(const board &b, const std::size_t depth) -> move {
+  // use the default seed for the rng, for determinism in testing.
   // TODO: eventually it would be nice to remove all randomness from the board
   // evaluation... it basically exists to hide any holes we have.
   std::mt19937 gen;
-
-  const auto best_variation = alphabeta(b, depth, gen);
-  return best_variation.move;
+  return evaluate(b, gen, depth);
 }
 
 } // namespace pawntificate

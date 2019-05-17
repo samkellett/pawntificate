@@ -8,7 +8,7 @@ enable_testing()
 # in-tree dependencies
 add_subdirectory(ext/googletest EXCLUDE_FROM_ALL)
 
-# compile time options and features used by all of the targets
+# compile and link time options and features used by all of the targets
 add_compile_options(
   -std=c++2a
   -stdlib=libc++
@@ -19,6 +19,10 @@ add_compile_options(
   -Wextra
   -Werror
   -pedantic
+)
+
+link_libraries(
+  -lc++fs
 )
 
 # sub projects
