@@ -70,7 +70,7 @@ auto king_is_safe(const board &b, const square king, const square from, const sq
     // one rank.
     return p.type() == ptype::queen ||
            p.type() == ptype::rook ||
-           (p.type() == ptype::king && file_distance(king, s) == 1);
+           (p.type() == ptype::king && (file_distance(king, s) == 1 || rank_distance(king, s) == 1));
   };
 
   const auto dangerous_diagonal_piece = [&](const piece p, const square s) {

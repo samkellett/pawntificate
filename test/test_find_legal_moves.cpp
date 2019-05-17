@@ -680,3 +680,44 @@ TEST(RealGame, CheckFromPawn) {
     move(square::e2, square::f1)
   }));
 }
+
+TEST(RealGame, EnemyKingProtectsEscapeSquare1) {
+  // FEN: 8/2p3p1/6k1/p1p5/4pK2/5q2/8/8 w - - 2 57
+  pawntificate::board uut("f2f3 e7e5 g2g3 f8c5 e2e4 d7d5 e4d5 c5g1 h1g1 d8d5 "
+                          "h2h3 d5d4 g1h1 c8f5 a2a4 g8f6 a4a5 e8g8 f1g2 f8e8 "
+                          "c2c3 d4c4 b1a3 c4a6 d1a4 f5d3 h3h4 a6c6 a4c6 b8c6 "
+                          "a3b1 e8e7 g2h3 a8d8 b2b3 d3b1 a1b1 c6a5 c3c4 d8d3 "
+                          "c1a3 e7e8 b1c1 d3b3 c1c3 b3c3 d2c3 a5c4 a3c5 b7b6 "
+                          "h3f1 c4d2 e1d2 b6c5 h1h2 e5e4 f3e4 f6e4 d2d3 e4g3 "
+                          "h2f2 e8e4 h4h5 e4h4 f1e2 g3e2 f2e2 h7h6 c3c4 h4h5 "
+                          "d3e3 h5e5 e3d3 e5e6 e2e6 f7e6 d3c2 e6e5 c2c3 a7a6 "
+                          "c3b3 e5e4 b3c3 g8h7 c3d2 h7g6 d2c1 g6h7 c1d1 h7g6 "
+                          "d1c2 h6h5 c2c1 h5h4 c1d2 h4h3 d2c1 h3h2 c1d2 h2h1q "
+                          "d2e2 h1c1 e2f2 c1c4 f2e3 c4c2 e3f4 c2d3 f4e5 a6a5 "
+                          "e5f4 d3f3");
+
+  const auto result = pawntificate::find_legal_moves(uut);
+  ASSERT_THAT(result, UnorderedElementsAreArray({
+    move(square::f4, square::e5)
+  }));
+}
+
+TEST(RealGame, EnemyKingProtectsEscapeSquare2) {
+  // FEN: 8/8/3R4/8/4k1P1/5N1P/5K2/8 b - - 0 54
+  pawntificate::board uut("d2d4 h7h6 e2e4 g7g5 f1d3 b8c6 d4d5 c6e5 f2f4 e5d3 "
+                          "d1d3 g5f4 d3d4 f4f3 g1f3 h8h7 e1g1 f7f6 f1d1 d7d6 "
+                          "c1e3 f8g7 d4a4 e8f7 f3d2 d8e8 a4e8 f7e8 b1a3 e8d8 "
+                          "e3d4 f6f5 d4g7 h7g7 d1f1 g7f7 e4f5 f7f5 d2e4 e7e6 "
+                          "d5e6 f5f1 a1f1 d8e8 a3b5 a8b8 b5c7 e8e7 f1f7 e7d8 "
+                          "c7d5 c8e6 f7f8 d8d7 d5b6 d7c7 b6a8 b8a8 f8a8 e6a2 "
+                          "b2b3 a2b3 c2b3 g8e7 a8a7 e7f5 b3b4 c7b6 a7a5 f5d4 "
+                          "a5d5 d4c2 d5d6 b6c7 d6h6 c2b4 e4c5 b7b6 h6h7 c7b8 "
+                          "h7b7 b8c8 b7b6 b4d5 b6b5 d5e3 h2h3 e3d1 b5b3 c8d8 "
+                          "b3d3 d8e7 d3d1 e7f6 d1d7 f6g5 d7d6 g5f5 c5d3 f5g5 "
+                          "d3e5 g5f5 e5f3 f5f4 g1f2 f4e4 g2g4");
+
+  const auto result = pawntificate::find_legal_moves(uut);
+  ASSERT_THAT(result, UnorderedElementsAreArray({
+    move(square::e4, square::f4)
+  }));
+}
